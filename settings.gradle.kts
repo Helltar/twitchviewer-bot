@@ -1,3 +1,3 @@
 
-rootProject.name = "twitchviewer_bot"
+rootProject.name = "twitchviewer-bot"
 

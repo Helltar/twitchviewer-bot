@@ -10,7 +10,7 @@
 
 ```bash
 mkdir twitchbot && cd twitchbot && \
-wget https://raw.githubusercontent.com/Helltar/twitchviewer_bot/master/{.env,compose.yaml,compose.with-postgres.yaml}
+wget https://raw.githubusercontent.com/Helltar/twitchviewer-bot/master/{.env,compose.yaml,compose.with-postgres.yaml}
 ```
 
 Edit the **.env** file and specify the required tokens, database address, and credentials for **PostgreSQL**:
@@ -33,7 +33,7 @@ This configuration will set up a separate PostgreSQL container, running alongsid
 docker compose -f compose.with-postgres.yaml up -d
 ```
 
-## Commands
+## Usage
 
 - `/clip` - Start recording clips from all channels or a specific channel
 - `/screenshot` - Take a screenshot from all channels or a specific channel
