@@ -1,6 +1,6 @@
 <p align="center">
     <a href="https://t.me/twitchviewer_bot">
-        <img src="https://helltar.com/projects/twitchviewer-bot/img/t-me-qr-code.png" alt="qr_code" width="35%"/>
+        <img src="https://helltar.com/projects/twitchviewer-bot/img/t-me-qr-code-1.png" alt="qr_code" width="35%"/>
     </a>
 </p>
 
