@@ -4,6 +4,8 @@ import io.github.cdimascio.dotenv.dotenv
 
 object Config {
 
+    private val dotenv = dotenv { ignoreIfMissing = true }
+
     val creatorId = readEnv("CREATOR_ID").toLongOrNull() ?: throw IllegalArgumentException("bad CREATOR_ID env")
     val botToken = readEnv("BOT_TOKEN")
     val botUsername = readEnv("BOT_USERNAME")
@@ -20,5 +22,5 @@ object Config {
     val javaTempDir = System.getProperty("java.io.tmpdir") ?: "/tmp"
 
     private fun readEnv(env: String) =
-        dotenv { ignoreIfMissing = true }[env] ?: throw IllegalArgumentException("error when read $env env")
+        dotenv[env] ?: throw IllegalArgumentException("error when read $env env")
 }
