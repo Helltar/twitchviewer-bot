@@ -8,7 +8,7 @@ class AboutCommand(ctx: MessageContext) : BotCommand(ctx) {
     override suspend fun run() {
         replyToMessage(
             """
-            <a href="https://github.com/Helltar/twitchviewer_bot">Twitch Viewer Bot</a>
+            <a href="https://github.com/Helltar/twitchviewer-bot">TwitchViewer Bot</a>
             Contact: https://helltar.com
             Source Code:
         """.trimIndent(), true

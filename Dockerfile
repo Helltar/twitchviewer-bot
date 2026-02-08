@@ -15,7 +15,7 @@ RUN apk add --no-cache ffmpeg py3-pip && \
     mkdir -p /app/data && chown -R twitchbot:twitchbot /app
 
 WORKDIR /app
-COPY --from=builder /app/build/libs/*.jar twitchviewer_bot.jar
+COPY --from=builder /app/build/libs/*.jar twitchviewer-bot.jar
 USER twitchbot
 
-ENTRYPOINT ["java", "-jar", "twitchviewer_bot.jar"]
+ENTRYPOINT ["java", "-jar", "twitchviewer-bot.jar"]
