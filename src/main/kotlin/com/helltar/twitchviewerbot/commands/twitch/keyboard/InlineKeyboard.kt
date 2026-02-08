@@ -20,7 +20,6 @@ import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.BUTT
 import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.BUTTON_NEXT_PAGE
 import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.BUTTON_PREV_PAGE
 import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.BUTTON_SCREEN
-import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.BUTTON_UPDATE
 import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.parseChannelName
 import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.parseNavigationPage
 import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.parseStreamLiveState
@@ -151,12 +150,6 @@ class InlineKeyboard(private val ctx: CallbackQueryContext, private val ownerId:
         keyboard.keyboardRow(InlineKeyboardRow(buttonClose))
 
         return keyboard.build()
-    }
-
-    @Suppress("unused")
-    fun waitingMenu(): InlineKeyboardMarkup {
-        val button = keyboardButton("\uD83D\uDD04", BUTTON_UPDATE)
-        return InlineKeyboardMarkup.builder().keyboardRow(InlineKeyboardRow(button)).build()
     }
 
     private fun editMessage(text: String, replyMarkup: InlineKeyboardMarkup? = null) =
