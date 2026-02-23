@@ -20,9 +20,11 @@ import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.BUTT
 import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.parseOwnerId
 import io.github.oshai.kotlinlogging.KotlinLogging
 
-private val log = KotlinLogging.logger {}
-
 class KeyboardBundle : CommandBundle<For> {
+
+    private companion object {
+        private val log = KotlinLogging.logger {}
+    }
 
     override fun register(registry: CommandRegistry<For>) {
         registry.run {
