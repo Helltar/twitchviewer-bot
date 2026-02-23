@@ -122,7 +122,7 @@ class ClipCommand(ctx: MessageContext) : TwitchCommand(ctx) {
             else
                 replyToMessage(localizedString(Strings.GET_CLIP_FAIL))
         } catch (e: Exception) {
-            log.error { "error processing clip for $channelLogin: ${e.message}" }
+            log.warn { "error processing clip for $channelLogin: ${e.message}" }
         } finally {
             File(ffmpegOutFilename).delete()
             File(streamlinkOutFilename).delete()
