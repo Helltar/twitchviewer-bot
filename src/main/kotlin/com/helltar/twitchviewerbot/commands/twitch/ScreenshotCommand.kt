@@ -3,6 +3,7 @@ package com.helltar.twitchviewerbot.commands.twitch
 import com.annimon.tgbotsmodule.commands.context.MessageContext
 import com.helltar.twitchviewerbot.Strings
 import com.helltar.twitchviewerbot.commands.TwitchCommand
+import com.helltar.twitchviewerbot.twitch.BroadcastData
 import com.helltar.twitchviewerbot.twitch.Twitch
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto
@@ -28,7 +29,7 @@ class ScreenshotCommand(ctx: MessageContext) : TwitchCommand(ctx) {
         val tempMessageId = replyToMessage(localizedString(Strings.WAIT_CHECK_ONLINE))
 
         try {
-            val liveList = twitch.fetchActiveStreams(channels)
+            val liveList = Twitch.fetchActiveStreams(channels)
 
             if (liveList != null) {
                 if (liveList.isNotEmpty()) {
@@ -51,7 +52,7 @@ class ScreenshotCommand(ctx: MessageContext) : TwitchCommand(ctx) {
         }
     }
 
-    private fun buildMediaPhoto(broadcastData: Twitch.BroadcastData): InputMediaPhoto {
+    private fun buildMediaPhoto(broadcastData: BroadcastData): InputMediaPhoto {
         val caption = createHtmlCaption(broadcastData)
         val inputStream = URI.create(broadcastData.thumbnailUrl).toURL().openStream()
 

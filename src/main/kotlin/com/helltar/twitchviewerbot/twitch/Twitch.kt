@@ -1,6 +1,5 @@
 package com.helltar.twitchviewerbot.twitch
 
-import com.github.twitch4j.TwitchClient
 import com.github.twitch4j.TwitchClientBuilder
 import com.helltar.twitchviewerbot.Config.twitchClientId
 import com.helltar.twitchviewerbot.Config.twitchClientSecret
@@ -10,32 +9,19 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-class Twitch {
+object Twitch {
 
-    private companion object {
-        val twitchClient: TwitchClient =
-            TwitchClientBuilder
-                .builder()
-                .withClientId(twitchClientId)
-                .withClientSecret(twitchClientSecret)
-                .withEnableHelix(true)
-                .build()
+    private val twitchClient =
+        TwitchClientBuilder
+            .builder()
+            .withClientId(twitchClientId)
+            .withClientSecret(twitchClientSecret)
+            .withEnableHelix(true)
+            .build()
 
-        val log = KotlinLogging.logger {}
-    }
+    private val log = KotlinLogging.logger {}
 
-    data class BroadcastData(
-        val login: String,
-        val username: String,
-        val title: String,
-        val viewerCount: Int,
-        val gameName: String,
-        val thumbnailUrl: String,
-        val startedAt: String,
-        val uptime: String
-    )
-
-    fun fetchActiveStreams(userLogins: List<String>) = try {
+    fun fetchActiveStreams(userLogins: List<String>): List<BroadcastData>? = try {
         twitchClient.helix.getStreams(null, null, null, 1, null, null, null, userLogins).execute().streams
             .map {
                 val formatter = DateTimeFormatter.ofPattern("HH:mm")

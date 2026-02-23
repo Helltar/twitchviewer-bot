@@ -4,6 +4,7 @@ import com.annimon.tgbotsmodule.commands.context.MessageContext
 import com.helltar.twitchviewerbot.Config.javaTempDir
 import com.helltar.twitchviewerbot.Strings
 import com.helltar.twitchviewerbot.commands.TwitchCommand
+import com.helltar.twitchviewerbot.twitch.BroadcastData
 import com.helltar.twitchviewerbot.twitch.Twitch
 import com.helltar.twitchviewerbot.utils.ProcessUtils.ffmpegPrepareClip
 import com.helltar.twitchviewerbot.utils.ProcessUtils.kill
@@ -53,7 +54,7 @@ class ClipCommand(ctx: MessageContext) : TwitchCommand(ctx) {
     }
 
     suspend fun fetchAndSendClips(userLogins: List<String>) {
-        twitch.fetchActiveStreams(userLogins)?.let {
+        Twitch.fetchActiveStreams(userLogins)?.let {
             if (it.isNotEmpty())
                 retrieveAndSendClips(it)
             else
@@ -65,14 +66,14 @@ class ClipCommand(ctx: MessageContext) : TwitchCommand(ctx) {
     suspend fun clip(channel: String) =
         fetchAndSendClips(listOf(channel))
 
-    private suspend fun retrieveAndSendClips(twitchBroadcastData: List<Twitch.BroadcastData>) = coroutineScope {
+    private suspend fun retrieveAndSendClips(twitchBroadcastData: List<BroadcastData>) = coroutineScope {
         twitchBroadcastData.chunked(MAX_SIMULTANEOUS_CLIP_DOWNLOADS).forEach { chunk ->
             ensureActive()
             processClipBatch(chunk)
         }
     }
 
-    private suspend fun processClipBatch(chunk: List<Twitch.BroadcastData>) = coroutineScope {
+    private suspend fun processClipBatch(chunk: List<BroadcastData>) = coroutineScope {
         val localizedMessage = localizedString(Strings.START_GET_CLIP)
         val chunkHtmlLinks = chunk.joinToString { it.login.toTwitchHtmlLink(it.username) }
         val tempMessage = localizedMessage.format(chunkHtmlLinks)
@@ -96,7 +97,7 @@ class ClipCommand(ctx: MessageContext) : TwitchCommand(ctx) {
         }
     }
 
-    private suspend fun downloadAndSendClip(broadcastData: Twitch.BroadcastData) {
+    private suspend fun downloadAndSendClip(broadcastData: BroadcastData) {
         val channelLogin = broadcastData.login
         val tempName = channelLogin.plusUUID()
         val streamlinkOutFilename = generateOutputFilename("streamlink", tempName)

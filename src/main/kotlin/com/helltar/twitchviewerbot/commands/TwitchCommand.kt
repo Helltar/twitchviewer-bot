@@ -3,13 +3,11 @@ package com.helltar.twitchviewerbot.commands
 import com.annimon.tgbotsmodule.commands.context.MessageContext
 import com.helltar.twitchviewerbot.Strings
 import com.helltar.twitchviewerbot.database.dao.userChannelsDao
-import com.helltar.twitchviewerbot.twitch.Twitch
+import com.helltar.twitchviewerbot.twitch.BroadcastData
 import com.helltar.twitchviewerbot.utils.StringUtils.toHashTag
 import com.helltar.twitchviewerbot.utils.StringUtils.toTwitchHtmlLink
 
 abstract class TwitchCommand(ctx: MessageContext) : BotCommand(ctx) {
-
-    protected val twitch = Twitch()
 
     protected suspend fun loadUserChannels(userId: Long = this.userId) =
         userChannelsDao.list(userId)
@@ -31,7 +29,7 @@ abstract class TwitchCommand(ctx: MessageContext) : BotCommand(ctx) {
         return true
     }
 
-    protected fun createHtmlCaption(broadcastData: Twitch.BroadcastData): String {
+    protected fun createHtmlCaption(broadcastData: BroadcastData): String {
         val username = broadcastData.username
         val category = broadcastData.gameName
 
