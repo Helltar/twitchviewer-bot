@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.helltar"
-version = "0.9.9"
+version = "0.10.0"
 
 repositories {
     mavenCentral()
@@ -17,7 +17,7 @@ object Versions {
 }
 
 dependencies {
-    implementation("com.annimon:tgbots-module:9.2.0") { exclude("org.telegram", "telegrambots-webhook") }
+    implementation("com.annimon:tgbots-module:9.4.0") { exclude("org.telegram", "telegrambots-webhook") }
     implementation("com.github.twitch4j:twitch4j:1.25.0")
     implementation("io.github.cdimascio:dotenv-kotlin:6.5.1")
 
