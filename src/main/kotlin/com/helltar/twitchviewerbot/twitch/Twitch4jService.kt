@@ -13,7 +13,6 @@ object Twitch4jService : TwitchService {
             .withClientId(twitchClientId)
             .withClientSecret(twitchClientSecret)
             .withEnableHelix(true)
-            .withFeignLogLevel(feign.Logger.Level.FULL)
             .build()
 
     private val log = KotlinLogging.logger {}
