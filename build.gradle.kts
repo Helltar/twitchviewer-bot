@@ -18,7 +18,7 @@ object Versions {
 
 dependencies {
     implementation("com.annimon:tgbots-module:9.4.0") { exclude("org.telegram", "telegrambots-webhook") }
-    implementation("com.github.twitch4j:twitch4j:1.25.0")
+    implementation("com.github.twitch4j:twitch4j:1.26.0")
     implementation("io.github.cdimascio:dotenv-kotlin:6.5.1")
 
     runtimeOnly("org.postgresql:r2dbc-postgresql:${Versions.R2DBC_POSTGRESQL}")
