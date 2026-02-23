@@ -1,7 +1,6 @@
 package com.helltar.twitchviewerbot.commands.twitch
 
 import com.annimon.tgbotsmodule.commands.context.MessageContext
-import com.helltar.twitchviewerbot.Config.javaTempDir
 import com.helltar.twitchviewerbot.Strings
 import com.helltar.twitchviewerbot.commands.TwitchCommand
 import com.helltar.twitchviewerbot.twitch.BroadcastData
@@ -22,6 +21,7 @@ class ClipCommand(ctx: MessageContext) : TwitchCommand(ctx) {
         const val MAX_SIMULTANEOUS_CLIP_DOWNLOADS = 3
         const val MAX_STREAMLINK_CLIP_DURATION_SEC = 40L
         const val FFMPEG_PROCESS_TIMEOUT = MAX_STREAMLINK_CLIP_DURATION_SEC
+        val javaTempDir = System.getProperty("java.io.tmpdir") ?: "/tmp"
         val log = KotlinLogging.logger {}
     }
 
