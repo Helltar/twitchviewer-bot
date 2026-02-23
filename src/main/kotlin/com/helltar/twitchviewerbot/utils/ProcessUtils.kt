@@ -9,7 +9,7 @@ object ProcessUtils {
 
     private val log = KotlinLogging.logger {}
 
-    fun ffmpegPrepareClip(inputFilename: String, outFilename: String, lengthTime: Long): Process {
+    fun ffmpegPrepareClip(inputFilename: String, outFilename: String, lengthTime: Long): Process { // todo: needs review
         val command =
             listOf(
                 "ffmpeg", "-i", inputFilename,
@@ -25,7 +25,7 @@ object ProcessUtils {
     fun startStreamlinkProcess(channelName: String, outFilename: String): Process {
         val command =
             listOf(
-                "streamlink", "--twitch-disable-ads",
+                "streamlink",
                 "https://www.twitch.tv/$channelName",
                 "720p,720p60,best",
                 "-o", outFilename
