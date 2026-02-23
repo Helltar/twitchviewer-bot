@@ -2,13 +2,15 @@ package com.helltar.twitchviewerbot.utils
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 object ProcessUtils {
 
     private val log = KotlinLogging.logger {}
 
     fun ffmpegPrepareClip(inputFilename: String, outFilename: String, lengthTime: Long): Process {
-        val process =
+        val command =
             listOf(
                 "ffmpeg", "-i", inputFilename,
                 "-fs", "9.9M", // if the file size exceeds 10MB, a black video thumbnail (preview) may appear on telegram
@@ -16,41 +18,50 @@ object ProcessUtils {
                 "-c", "copy",
                 "-loglevel", "quiet", outFilename
             )
-                .startProcess()
 
-        return process ?: throw RuntimeException("failed to start ffmpeg process: $inputFilename")
+        return command.startProcessOrThrow("failed to start ffmpeg")
     }
 
     fun startStreamlinkProcess(channelName: String, outFilename: String): Process {
-        val process =
+        val command =
             listOf(
                 "streamlink", "--twitch-disable-ads",
                 "https://www.twitch.tv/$channelName",
                 "720p,720p60,best",
                 "-o", outFilename
             )
-                .startProcess()
 
-        return process ?: throw RuntimeException("failed to start streamlink process for channel: $channelName")
+        return command.startProcessOrThrow("failed to start streamlink")
     }
 
-    fun Process.kill() {
-        if (this.isAlive) {
-            log.warn { "destroying process ${this.pid()}" }
-            this.destroy()
+    fun Process.kill(timeout: Duration = 5.seconds) {
+        if (!isAlive) return
 
-            if (!this.waitFor(5, TimeUnit.SECONDS)) {
-                log.warn { "force destroying process ${this.pid()} after timeout" }
-                this.destroyForcibly()
+        val pid = pid()
+        log.warn { "destroying process $pid" }
+        destroy()
+
+        runCatching {
+            if (!waitFor(timeout.inWholeSeconds, TimeUnit.SECONDS)) {
+                log.warn { "force destroying process $pid after timeout" }
+                destroyForcibly().waitFor()
             }
+        }.onFailure { e ->
+            if (e is InterruptedException) {
+                Thread.currentThread().interrupt()
+                log.warn { "interrupted while waiting process $pid to terminate, forcing destroy" }
+            } else
+                log.error(e) { "unexpected error killing process $pid" }
+
+            destroyForcibly()
         }
     }
 
-    private fun List<String>.startProcess(): Process? =
+    private fun List<String>.startProcessOrThrow(errorMessage: String): Process =
         try {
             ProcessBuilder(this).start()
         } catch (e: Exception) {
-            log.error(e) { e.message }
-            null
+            log.error(e) { "failed to start process: ${joinToString(" ")}" }
+            throw RuntimeException(errorMessage, e)
         }
 }
