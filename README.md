@@ -1,7 +1,7 @@
 <p align="center">
-    <a href="https://t.me/twitchviewer_bot">
-        <img src="https://helltar.com/projects/twitchviewer-bot/img/t-me-qr-code-1.png" alt="qr_code" width="35%"/>
-    </a>
+  <a href="https://t.me/twitchviewer_bot">
+    <img src="https://helltar.com/projects/twitchviewer-bot/img/t-me-qr-code-1.png" alt="Telegram bot QR code" width="35%"/>
+  </a>
 </p>
 
 ## Installation
@@ -13,30 +13,35 @@ mkdir twitchbot && cd twitchbot && \
 wget https://raw.githubusercontent.com/Helltar/twitchviewer-bot/master/{.env,compose.yaml,compose.with-postgres.yaml}
 ```
 
-Edit the **.env** file and specify the required tokens, database address, and credentials for **PostgreSQL**:
+Edit `.env` and fill in your values:
 
-- `CREATOR_ID`: your Telegram user-ID
-- `BOT_TOKEN` & `BOT_USERNAME`: [BotFather](https://t.me/BotFather)
-- `TWITCH_CLIENT_ID` & `TWITCH_CLIENT_SECRET`: [Twitch Developer Console](https://dev.twitch.tv/console/apps/create)
+- `CREATOR_ID`: your Telegram user ID
+- `BOT_TOKEN`: Telegram bot token ([BotFather](https://t.me/BotFather))
+- `BOT_USERNAME`: Telegram bot username ([BotFather](https://t.me/BotFather))
+- `TWITCH_CLIENT_ID`: Twitch app client ID ([Twitch Developer Console](https://dev.twitch.tv/console/apps))
+- `TWITCH_CLIENT_SECRET`: Twitch app client secret ([Twitch Developer Console](https://dev.twitch.tv/console/apps))
+- `POSTGRESQL_*` + `DATABASE_*`: PostgreSQL connection settings
 
-If you already have an external PostgreSQL database, use the `compose.yaml` file.
-In this configuration, PostgreSQL is **not** included as a container, and the bot will connect to your external database using the details provided in the **.env** file:
+Run with an external PostgreSQL database:
 
 ```bash
 docker compose up -d
 ```
 
-If you do not have an external PostgreSQL instance, use the `compose.with-postgres.yaml` file.
-This configuration will set up a separate PostgreSQL container, running alongside the bot:
+Run with PostgreSQL container included:
 
 ```bash
 docker compose -f compose.with-postgres.yaml up -d
 ```
 
-## Usage
+## Commands
 
-- `/clip` - Start recording clips from all channels or a specific channel
-- `/screenshot` - Take a screenshot from all channels or a specific channel
-- `/list` - View your favorite channels
-- `/add` - Add a new channel to your favorites
-- `/cancel` - End the recording process started using the `/clip` command
+- `/clip` - Record clips from all tracked channels or a specific channel
+- `/screenshot` - Capture screenshots from all tracked channels or a specific channel
+- `/add` - Add channel to favorites
+- `/list` - Show your favorite channels
+- `/cancel` - Cancel your active background tasks
+
+## Notes
+
+- The bot requires `ffmpeg` and `streamlink` (already included in the provided Docker image).
