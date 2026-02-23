@@ -38,6 +38,10 @@ class InlineKeyboard(private val ctx: CallbackQueryContext, private val ownerId:
     private companion object {
         const val CHANNELS_PER_PAGE = 8
         const val CHANNELS_PER_ROW = 2
+        const val BTN_STYLE_DEFAULT = ""
+        const val BTN_STYLE_PRIMARY = "primary"
+        const val BTN_STYLE_SUCCESS = "success"
+        const val BTN_STYLE_DANGER = "danger"
     }
 
     private val messageContext = MessageContext(ctx.sender, ctx.update(), String()).apply { this.user().id = ownerId } // todo: user().id
@@ -51,13 +55,13 @@ class InlineKeyboard(private val ctx: CallbackQueryContext, private val ownerId:
         val isStreamLive = parseStreamLiveState(ctx.data())
 
         if (isStreamLive) {
-            val buttonClip = keyboardButton(localizedString(BTN_SHORT_CLIP), BUTTON_CLIP, channelName)
+            val buttonClip = keyboardButton(localizedString(BTN_SHORT_CLIP), BUTTON_CLIP, channelName, btnStyle = BTN_STYLE_PRIMARY)
             keyboard.keyboardRow(InlineKeyboardRow(buttonClip))
         }
 
         val buttonBack = keyboardButton(localizedString(BTN_BACK), BUTTON_BACK)
         val buttonClose = keyboardButton(localizedString(BTN_EXIT), BUTTON_CLOSE_LIST)
-        val buttonDelete = keyboardButton(localizedString(BTN_DELETE), BUTTON_DELETE_CHANNEL, channelName)
+        val buttonDelete = keyboardButton(localizedString(BTN_DELETE), BUTTON_DELETE_CHANNEL, channelName, btnStyle = BTN_STYLE_DANGER)
 
         keyboard.keyboardRow(InlineKeyboardRow(buttonBack, buttonClose, buttonDelete))
 
@@ -104,7 +108,7 @@ class InlineKeyboard(private val ctx: CallbackQueryContext, private val ownerId:
 
     suspend fun mainMenu(): InlineKeyboardMarkup {
         val userChannels = userChannelsDao.list(ownerId)
-        val onlineList = Twitch().fetchActiveStreams(userChannels) ?: listOf()
+        val onlineList = Twitch.fetchActiveStreams(userChannels) ?: listOf()
         val liveStreams = onlineList.map { it.login.lowercase() }
         val sortedChannels = userChannels.sortedByDescending { it in liveStreams }
         val paginatedChannels = sortedChannels.chunked(CHANNELS_PER_PAGE)
@@ -112,15 +116,15 @@ class InlineKeyboard(private val ctx: CallbackQueryContext, private val ownerId:
         val buttons = mutableListOf<InlineKeyboardButton>()
 
         paginatedChannels[safePage].forEach { channel ->
-            var channelStatus = "⚪️"
+            var btnStyle = BTN_STYLE_DEFAULT
             var streamLive = false
 
             if (channel.lowercase() in liveStreams) {
-                channelStatus = "\uD83D\uDD34" // 🔴
+                btnStyle = BTN_STYLE_SUCCESS
                 streamLive = true
             }
 
-            buttons.add(keyboardButton("$channelStatus $channel", BUTTON_CHANNEL, channel, streamLive))
+            buttons.add(keyboardButton(channel, BUTTON_CHANNEL, channel, streamLive, btnStyle = btnStyle))
         }
 
         val keyboard = InlineKeyboardMarkup.builder()
@@ -141,9 +145,9 @@ class InlineKeyboard(private val ctx: CallbackQueryContext, private val ownerId:
             keyboard.keyboardRow(InlineKeyboardRow(navigationRow))
 
         if (liveStreams.isNotEmpty()) {
-            val buttonClips = keyboardButton(localizedString(Strings.BTN_GET_ALL_SCREENS), BUTTON_CLIPS)
-            val buttonScreen = keyboardButton(localizedString(Strings.BTN_WHO_IS_ONLINE), BUTTON_SCREEN)
-            keyboard.keyboardRow(InlineKeyboardRow(listOf(buttonClips, buttonScreen)))
+            val buttonClips = keyboardButton(localizedString(Strings.BTN_RECORD_ALL), BUTTON_CLIPS, btnStyle = BTN_STYLE_PRIMARY)
+            val buttonScreens = keyboardButton(localizedString(Strings.BTN_CAPTURE_ALL), BUTTON_SCREEN, btnStyle = BTN_STYLE_PRIMARY)
+            keyboard.keyboardRow(InlineKeyboardRow(listOf(buttonClips, buttonScreens)))
         }
 
         val buttonClose = keyboardButton(localizedString(Strings.BTN_CLOSE_LIST), BUTTON_CLOSE_LIST)
@@ -158,9 +162,16 @@ class InlineKeyboard(private val ctx: CallbackQueryContext, private val ownerId:
             .disableWebPagePreview()
             .call(ctx.sender)
 
-    private fun keyboardButton(text: String, buttonId: String, channelName: String = "-", isStreamLive: Boolean = false, page: Int = navigationPage): InlineKeyboardButton {
+    private fun keyboardButton(
+        text: String,
+        buttonId: String,
+        channelName: String = "-",
+        isStreamLive: Boolean = false,
+        page: Int = navigationPage,
+        btnStyle: String = BTN_STYLE_DEFAULT
+    ): InlineKeyboardButton {
         val callbackData = ButtonCallbacks.CallbackData(buttonId, ownerId, channelName, isStreamLive, page)
-        return InlineKeyboardButton.builder().text(text).callbackData(callbackData.string()).build()
+        return InlineKeyboardButton.builder().text(text).style(btnStyle).callbackData(callbackData.string()).build()
     }
 
     private suspend fun localizedString(key: String) =
