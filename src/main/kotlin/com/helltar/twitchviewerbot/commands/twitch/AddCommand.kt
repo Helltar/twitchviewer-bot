@@ -9,7 +9,7 @@ import com.helltar.twitchviewerbot.database.dao.userChannelsDao
 class AddCommand(ctx: MessageContext) : TwitchCommand(ctx) {
 
     private companion object {
-        const val MAX_USER_CHANNELS = 24
+        const val MAX_USER_CHANNELS = 32
     }
 
     override suspend fun run() {
