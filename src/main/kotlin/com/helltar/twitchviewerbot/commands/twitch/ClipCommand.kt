@@ -5,7 +5,6 @@ import com.helltar.twitchviewerbot.Config.javaTempDir
 import com.helltar.twitchviewerbot.Strings
 import com.helltar.twitchviewerbot.commands.TwitchCommand
 import com.helltar.twitchviewerbot.twitch.BroadcastData
-import com.helltar.twitchviewerbot.twitch.Twitch
 import com.helltar.twitchviewerbot.utils.ProcessUtils.ffmpegPrepareClip
 import com.helltar.twitchviewerbot.utils.ProcessUtils.kill
 import com.helltar.twitchviewerbot.utils.ProcessUtils.startStreamlinkProcess
@@ -54,13 +53,17 @@ class ClipCommand(ctx: MessageContext) : TwitchCommand(ctx) {
     }
 
     suspend fun fetchAndSendClips(userLogins: List<String>) {
-        Twitch.fetchActiveStreams(userLogins)?.let {
-            if (it.isNotEmpty())
-                retrieveAndSendClips(it)
-            else
-                replyToMessage(localizedString(Strings.EMPTY_ONLINE_LIST))
-        }
-            ?: replyToMessage(localizedString(Strings.TWITCH_EXCEPTION))
+        val activeStreams =
+            runCatching { twitchService.fetchActiveStreams(userLogins) }
+                .getOrElse {
+                    replyToMessage(localizedString(Strings.TWITCH_EXCEPTION))
+                    return
+                }
+
+        if (activeStreams.isNotEmpty())
+            retrieveAndSendClips(activeStreams)
+        else
+            replyToMessage(localizedString(Strings.EMPTY_ONLINE_LIST))
     }
 
     suspend fun clip(channel: String) =

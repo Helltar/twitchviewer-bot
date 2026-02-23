@@ -26,14 +26,19 @@ import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.pars
 import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.string
 import com.helltar.twitchviewerbot.database.dao.userChannelsDao
 import com.helltar.twitchviewerbot.database.dao.usersDao
-import com.helltar.twitchviewerbot.twitch.Twitch
+import com.helltar.twitchviewerbot.twitch.Twitch4jService
+import com.helltar.twitchviewerbot.twitch.TwitchService
 import com.helltar.twitchviewerbot.utils.StringUtils.toTwitchHtmlLink
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow
 
-class InlineKeyboard(private val ctx: CallbackQueryContext, private val ownerId: Long) {
+class InlineKeyboard(
+    private val ctx: CallbackQueryContext,
+    private val ownerId: Long,
+    private val twitchService: TwitchService = Twitch4jService
+) {
 
     private companion object {
         const val CHANNELS_PER_PAGE = 8
@@ -108,10 +113,17 @@ class InlineKeyboard(private val ctx: CallbackQueryContext, private val ownerId:
 
     suspend fun mainMenu(): InlineKeyboardMarkup {
         val userChannels = userChannelsDao.list(ownerId)
-        val onlineList = Twitch.fetchActiveStreams(userChannels) ?: listOf()
+        val onlineList = runCatching { twitchService.fetchActiveStreams(userChannels) }.getOrDefault(emptyList())
         val liveStreams = onlineList.map { it.login.lowercase() }
         val sortedChannels = userChannels.sortedByDescending { it in liveStreams }
         val paginatedChannels = sortedChannels.chunked(CHANNELS_PER_PAGE)
+
+        if (paginatedChannels.isEmpty()) {
+            return InlineKeyboardMarkup.builder()
+                .keyboardRow(InlineKeyboardRow(keyboardButton(localizedString(Strings.BTN_CLOSE_LIST), BUTTON_CLOSE_LIST)))
+                .build()
+        }
+
         val safePage = navigationPage.coerceIn(0, paginatedChannels.lastIndex)
         val buttons = mutableListOf<InlineKeyboardButton>()
 

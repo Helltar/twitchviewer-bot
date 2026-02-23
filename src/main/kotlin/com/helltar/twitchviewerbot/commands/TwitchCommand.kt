@@ -4,10 +4,12 @@ import com.annimon.tgbotsmodule.commands.context.MessageContext
 import com.helltar.twitchviewerbot.Strings
 import com.helltar.twitchviewerbot.database.dao.userChannelsDao
 import com.helltar.twitchviewerbot.twitch.BroadcastData
+import com.helltar.twitchviewerbot.twitch.Twitch4jService
+import com.helltar.twitchviewerbot.twitch.TwitchService
 import com.helltar.twitchviewerbot.utils.StringUtils.toHashTag
 import com.helltar.twitchviewerbot.utils.StringUtils.toTwitchHtmlLink
 
-abstract class TwitchCommand(ctx: MessageContext) : BotCommand(ctx) {
+abstract class TwitchCommand(ctx: MessageContext, protected val twitchService: TwitchService = Twitch4jService) : BotCommand(ctx) {
 
     protected suspend fun loadUserChannels(userId: Long = this.userId) =
         userChannelsDao.list(userId)
