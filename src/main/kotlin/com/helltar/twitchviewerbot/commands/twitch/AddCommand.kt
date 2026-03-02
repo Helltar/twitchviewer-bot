@@ -9,7 +9,7 @@ import com.helltar.twitchviewerbot.database.dao.userChannelsDao
 class AddCommand(ctx: MessageContext) : TwitchCommand(ctx) {
 
     private companion object {
-        const val MAX_USER_CHANNELS = 32
+        const val MAX_SAVED_CHANNELS_PER_USER = 32
     }
 
     override suspend fun run() {
@@ -28,7 +28,7 @@ class AddCommand(ctx: MessageContext) : TwitchCommand(ctx) {
 
         val userChannelsListSize = loadUserChannels().size
 
-        if (userChannelsListSize < MAX_USER_CHANNELS) {
+        if (userChannelsListSize < MAX_SAVED_CHANNELS_PER_USER) {
             if (addChannelToUserList(channel))
                 replyToMessage(localizedString(Strings.CHANNEL_ADDED_TO_LIST).format(channel, botUsername))
             else
