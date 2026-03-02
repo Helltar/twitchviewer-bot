@@ -29,8 +29,10 @@ class ClipCommand(ctx: MessageContext) : TwitchCommand(ctx) {
 
     override suspend fun run() {
         if (arguments.isEmpty()) {
-            if (isUserListNotEmpty())
-                fetchAndSendClips(loadUserChannels())
+            val channels = loadUserChannels()
+
+            if (channels.isNotEmpty())
+                fetchAndSendClips(channels)
             else
                 replyToMessage(localizedString(Strings.CLIP_COMMAND_INFO))
 

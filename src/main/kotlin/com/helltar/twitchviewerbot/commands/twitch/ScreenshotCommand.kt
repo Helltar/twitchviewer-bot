@@ -12,8 +12,10 @@ class ScreenshotCommand(ctx: MessageContext) : TwitchCommand(ctx) {
 
     override suspend fun run() {
         if (arguments.isEmpty()) {
-            if (isUserListNotEmpty())
-                fetchAndSendScreenshots(loadUserChannels())
+            val channels = loadUserChannels()
+
+            if (channels.isNotEmpty())
+                fetchAndSendScreenshots(channels)
             else
                 replyToMessage(localizedString(Strings.SCREENSHOT_COMMAND_INFO))
         } else {

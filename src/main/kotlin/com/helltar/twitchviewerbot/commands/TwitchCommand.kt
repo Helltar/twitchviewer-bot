@@ -14,9 +14,6 @@ abstract class TwitchCommand(ctx: MessageContext, protected val twitchService: T
     protected suspend fun loadUserChannels(userId: Long = this.userId) =
         userChannelsDao.list(userId)
 
-    protected suspend fun isUserListNotEmpty(userId: Long = this.userId) =
-        userChannelsDao.isListNotEmpty(userId)
-
     protected fun checkChannelNameAndReplyIfInvalid(name: String): Boolean {
         if (name.length !in 2..25) {
             replyToMessage(localizedString(Strings.INVALID_CHANNEL_NAME_LENGTH))
