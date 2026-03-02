@@ -18,10 +18,10 @@ import java.util.concurrent.TimeUnit
 class ClipCommand(ctx: MessageContext) : TwitchCommand(ctx) {
 
     private companion object {
-        const val MAX_SIMULTANEOUS_CLIP_DOWNLOADS = 3
-        const val MAX_STREAMLINK_CLIP_DURATION_SEC = 40L
-        const val FFMPEG_PROCESS_TIMEOUT = MAX_STREAMLINK_CLIP_DURATION_SEC
-        val javaTempDir = System.getProperty("java.io.tmpdir") ?: "/tmp"
+        const val MAX_CONCURRENT_CLIPS = 3
+        const val CLIP_DURATION_SEC = 40L
+        const val FFMPEG_TIMEOUT_SEC = CLIP_DURATION_SEC
+        val TEMP_DIR = System.getProperty("java.io.tmpdir") ?: "/tmp"
         val log = KotlinLogging.logger {}
     }
 
@@ -87,18 +87,16 @@ class ClipCommand(ctx: MessageContext) : TwitchCommand(ctx) {
     suspend fun clip(channel: String) =
         fetchAndSendClips(listOf(channel))
 
-    private suspend fun retrieveAndSendClips(twitchBroadcastData: List<BroadcastData>) = coroutineScope {
-        twitchBroadcastData.chunked(MAX_SIMULTANEOUS_CLIP_DOWNLOADS).forEach { chunk ->
+    private suspend fun retrieveAndSendClips(broadcasts: List<BroadcastData>) = coroutineScope {
+        broadcasts.chunked(MAX_CONCURRENT_CLIPS).forEach { chunk ->
             ensureActive()
             processClipBatch(chunk)
         }
     }
 
     private suspend fun processClipBatch(chunk: List<BroadcastData>) = coroutineScope {
-        val localizedMessage = localizedString(Strings.START_GET_CLIP)
-        val chunkHtmlLinks = chunk.joinToString { it.login.toTwitchHtmlLink(it.username) }
-        val tempMessage = localizedMessage.format(chunkHtmlLinks)
-        val tempMessageId = replyToMessage(tempMessage)
+        val channelLinks = chunk.joinToString { it.login.toTwitchHtmlLink(it.username) }
+        val statusMessageId = replyToMessage(localizedString(Strings.START_GET_CLIP).format(channelLinks))
 
         val jobs =
             chunk.map { broadcastData ->
@@ -114,36 +112,36 @@ class ClipCommand(ctx: MessageContext) : TwitchCommand(ctx) {
             processes.forEach { it.kill() }
         } finally {
             processes.clear()
-            deleteMessageAsync(tempMessageId)
+            deleteMessageAsync(statusMessageId)
         }
     }
 
     private suspend fun downloadAndSendClip(broadcastData: BroadcastData) {
         val channelLogin = broadcastData.login
         val tempName = channelLogin.plusUUID()
-        val streamlinkOutFilename = generateOutputFilename("streamlink", tempName)
-        val ffmpegOutFilename = generateOutputFilename("ffmpeg", tempName)
+        val streamlinkFile = generateOutputFilename("streamlink", tempName)
+        val ffmpegFile = generateOutputFilename("ffmpeg", tempName)
 
         try {
             ensureActive {
-                startStreamlinkProcess(channelLogin, streamlinkOutFilename)
-                    .wait(MAX_STREAMLINK_CLIP_DURATION_SEC)
+                startStreamlinkProcess(channelLogin, streamlinkFile)
+                    .wait(CLIP_DURATION_SEC)
             }
 
             ensureActive {
-                ffmpegPrepareClip(streamlinkOutFilename, ffmpegOutFilename, MAX_STREAMLINK_CLIP_DURATION_SEC)
-                    .wait(FFMPEG_PROCESS_TIMEOUT)
+                ffmpegPrepareClip(streamlinkFile, ffmpegFile, CLIP_DURATION_SEC)
+                    .wait(FFMPEG_TIMEOUT_SEC)
             }
 
-            if (File(ffmpegOutFilename).exists())
-                replyToMessageWithVideo(ffmpegOutFilename, createHtmlCaption(broadcastData))
+            if (File(ffmpegFile).exists())
+                replyToMessageWithVideo(ffmpegFile, createHtmlCaption(broadcastData))
             else
                 replyToMessage(localizedString(Strings.GET_CLIP_FAIL))
         } catch (e: Exception) {
             log.warn { "error processing clip for $channelLogin: ${e.message}" }
         } finally {
-            File(ffmpegOutFilename).delete()
-            File(streamlinkOutFilename).delete()
+            File(ffmpegFile).delete()
+            File(streamlinkFile).delete()
         }
     }
 
@@ -164,5 +162,5 @@ class ClipCommand(ctx: MessageContext) : TwitchCommand(ctx) {
     }
 
     private fun generateOutputFilename(prefix: String, tempName: String) =
-        "$javaTempDir/${prefix}_$tempName.mp4"
+        "$TEMP_DIR/${prefix}_$tempName.mp4"
 }
