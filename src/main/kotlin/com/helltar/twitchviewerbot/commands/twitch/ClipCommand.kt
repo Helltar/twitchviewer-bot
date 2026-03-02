@@ -33,23 +33,39 @@ class ClipCommand(ctx: MessageContext) : TwitchCommand(ctx) {
                 fetchAndSendClips(loadUserChannels())
             else
                 replyToMessage(localizedString(Strings.CLIP_COMMAND_INFO))
-        } else {
-            val arg = arguments.first().take(26)
 
-            if (arg.endsWith(".") && arg.length > 1) {
-                val prefix = arg.removeSuffix(".")
-                val userChannels = loadUserChannels()
-                val channels = userChannels.filter { it.startsWith(prefix, ignoreCase = true) }
-
-                if (channels.isNotEmpty()) {
-                    fetchAndSendClips(channels)
-                    return
-                }
-            }
-
-            if (checkChannelNameAndReplyIfInvalid(arg))
-                clip(arg)
+            return
         }
+
+        val input = arguments.first().take(27)
+
+        if (input.endsWith(".") && input.length > 1) {
+            val isExclude = input.startsWith("!") && input.length > 2
+
+            val prefix =
+                if (!isExclude)
+                    input.removeSuffix(".")
+                else
+                    input.removePrefix("!").removeSuffix(".")
+
+            val userChannels = loadUserChannels()
+
+            val filtered =
+                if (!isExclude)
+                    userChannels.filter { it.startsWith(prefix, ignoreCase = true) }
+                else
+                    userChannels.filterNot { it.startsWith(prefix, ignoreCase = true) }
+
+            if (filtered.isNotEmpty())
+                fetchAndSendClips(filtered)
+            else
+                replyToMessage(localizedString(Strings.FILTER_NO_CHANNELS_FOUND).format(input))
+
+            return
+        }
+
+        if (checkChannelNameAndReplyIfInvalid(input))
+            clip(input)
     }
 
     suspend fun fetchAndSendClips(userLogins: List<String>) {

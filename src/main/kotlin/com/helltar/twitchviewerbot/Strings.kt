@@ -10,6 +10,7 @@ object Strings {
     const val CLIP_COMMAND_INFO = "clip_command_info"
     const val DONT_TOUCH_IS_NOT_YOUR_LIST = "dont_touch_is_not_your_list"
     const val EMPTY_ONLINE_LIST = "empty_online_list"
+    const val FILTER_NO_CHANNELS_FOUND = "filter_no_channels_found"
     const val GET_CLIP_FAIL = "get_clip_fail"
     const val INVALID_CHANNEL_NAME = "invalid_channel_name"
     const val INVALID_CHANNEL_NAME_LENGTH = "invalid_channel_name_length"
