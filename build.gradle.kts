@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "2.3.0"
+    kotlin("jvm") version "2.3.10"
     id("com.gradleup.shadow") version "9.3.0"
     application
 }
@@ -12,12 +12,13 @@ repositories {
 }
 
 object Versions {
-    const val EXPOSED = "1.0.0"
+    const val EXPOSED = "1.1.1"
     const val R2DBC_POSTGRESQL = "1.1.1.RELEASE"
 }
 
 dependencies {
-    implementation("com.annimon:tgbots-module:9.4.0") { exclude("org.telegram", "telegrambots-webhook") }
+    implementation("com.annimon:tgbots-module:9.5.0") { exclude("org.telegram", "telegrambots-webhook") }
+
     implementation("com.github.twitch4j:twitch4j:1.26.0")
     implementation("io.github.cdimascio:dotenv-kotlin:6.5.1")
 
