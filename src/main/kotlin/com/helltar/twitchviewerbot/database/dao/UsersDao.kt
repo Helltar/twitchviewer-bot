@@ -1,7 +1,7 @@
 package com.helltar.twitchviewerbot.database.dao
 
 import com.helltar.twitchviewerbot.database.Database.dbTransaction
-import com.helltar.twitchviewerbot.database.Database.utcNow
+import com.helltar.twitchviewerbot.database.Database.now
 import com.helltar.twitchviewerbot.database.tables.UsersTable
 import com.helltar.twitchviewerbot.database.tables.UsersTable.firstName
 import com.helltar.twitchviewerbot.database.tables.UsersTable.languageCode
@@ -22,14 +22,13 @@ class UsersDao {
                     it[firstName] = user.firstName
                     it[username] = user.userName
                     it[languageCode] = user.languageCode
-                    it[updatedAt] = utcNow()
+                    it[updatedAt] = now()
                 })
             {
                 it[userId] = user.id
                 it[firstName] = user.firstName
                 it[username] = user.userName
                 it[languageCode] = user.languageCode
-                it[createdAt] = utcNow()
             }
     }
 

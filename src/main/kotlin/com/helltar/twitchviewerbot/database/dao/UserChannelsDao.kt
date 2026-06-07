@@ -1,7 +1,6 @@
 package com.helltar.twitchviewerbot.database.dao
 
 import com.helltar.twitchviewerbot.database.Database.dbTransaction
-import com.helltar.twitchviewerbot.database.Database.utcNow
 import com.helltar.twitchviewerbot.database.tables.UserChannelsTable
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
@@ -18,7 +17,6 @@ class UserChannelsDao {
             .insertIgnore {
                 it[this.userId] = userId
                 it[this.channelName] = channelName
-                it[this.createdAt] = utcNow()
             }
             .insertedCount > 0
     }
