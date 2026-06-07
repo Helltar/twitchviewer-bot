@@ -9,12 +9,13 @@ RUN gradle shadowJar --no-daemon
 
 FROM eclipse-temurin:21-jre-alpine
 
+WORKDIR /app
+
 RUN apk add --no-cache ffmpeg py3-pip && \
     pip3 install --no-cache-dir --break-system-packages streamlink && \
     adduser -u 10001 -D -s /bin/sh twitchbot && \
     chown -R twitchbot:twitchbot /app
 
-WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar twitchviewer-bot.jar
 USER twitchbot
 
