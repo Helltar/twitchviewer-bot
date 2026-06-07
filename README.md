@@ -8,9 +8,12 @@
 
 ### Docker Compose
 
+Download the configuration files:
+
 ```bash
 mkdir twitchbot && cd twitchbot && \
-wget https://raw.githubusercontent.com/Helltar/twitchviewer-bot/master/{.env,compose.yaml,compose.with-postgres.yaml}
+wget https://raw.githubusercontent.com/Helltar/twitchviewer-bot/master/{.env.example,compose.yaml} && \
+mv .env.example .env
 ```
 
 Edit `.env` and fill in your values:
@@ -22,17 +25,16 @@ Edit `.env` and fill in your values:
 - `TWITCH_CLIENT_SECRET`: Twitch app client secret ([Twitch Developer Console](https://dev.twitch.tv/console/apps))
 - `POSTGRESQL_*` + `DATABASE_*`: PostgreSQL connection settings
 
-Run with an external PostgreSQL database:
+Start the bot:
 
 ```bash
 docker compose up -d
 ```
 
-Run with PostgreSQL container included:
-
-```bash
-docker compose -f compose.with-postgres.yaml up -d
-```
+> **Note:**
+> `compose.yaml` includes a PostgreSQL container, so no external database is required.
+> To use your own PostgreSQL instance instead, remove the `postgres` service from
+> `compose.yaml` and point the `POSTGRESQL_*` / `DATABASE_*` values in `.env` to it.
 
 ## Commands
 
