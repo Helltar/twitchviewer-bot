@@ -12,7 +12,7 @@ FROM eclipse-temurin:21-jre-alpine
 RUN apk add --no-cache ffmpeg py3-pip && \
     pip3 install --no-cache-dir --break-system-packages streamlink && \
     adduser -u 10001 -D -s /bin/sh twitchbot && \
-    mkdir -p /app/data && chown -R twitchbot:twitchbot /app
+    chown -R twitchbot:twitchbot /app
 
 WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar twitchviewer-bot.jar
