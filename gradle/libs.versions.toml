@@ -1,0 +1,25 @@
+[versions]
+dotenv-kotlin = "6.5.1"
+exposed = "1.1.1"
+kotlin = "2.3.10"
+kotlin-logging = "7.0.14"
+logback = "1.5.27"
+r2dbc-postgresql = "1.1.1.RELEASE"
+shadow = "9.3.0"
+tgbots-module = "9.5.0"
+twitch4j = "1.26.0"
+
+[libraries]
+dotenv-kotlin = { module = "io.github.cdimascio:dotenv-kotlin", version.ref = "dotenv-kotlin" }
+exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
+exposed-java-time = { module = "org.jetbrains.exposed:exposed-java-time", version.ref = "exposed" }
+exposed-r2dbc = { module = "org.jetbrains.exposed:exposed-r2dbc", version.ref = "exposed" }
+kotlin-logging = { module = "io.github.oshai:kotlin-logging-jvm", version.ref = "kotlin-logging" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+r2dbc-postgresql = { module = "org.postgresql:r2dbc-postgresql", version.ref = "r2dbc-postgresql" }
+tgbots-module = { module = "com.annimon:tgbots-module", version.ref = "tgbots-module" }
+twitch4j = { module = "com.github.twitch4j:twitch4j", version.ref = "twitch4j" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }

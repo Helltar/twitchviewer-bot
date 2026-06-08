@@ -1,0 +1,10 @@
+**
+
+!Dockerfile
+!build.gradle.kts
+!gradle.properties
+!settings.gradle.kts
+!gradle/
+!gradle/libs.versions.toml
+!src/
+!src/**
