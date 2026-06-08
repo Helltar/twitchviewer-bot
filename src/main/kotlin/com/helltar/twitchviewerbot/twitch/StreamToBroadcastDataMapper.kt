@@ -2,9 +2,10 @@ package com.helltar.twitchviewerbot.twitch
 
 import com.github.twitch4j.helix.domain.Stream
 import com.helltar.twitchviewerbot.utils.StringUtils.escapeHtml
-import java.time.LocalTime
+import java.time.Duration
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 object StreamToBroadcastDataMapper {
 
@@ -16,7 +17,7 @@ object StreamToBroadcastDataMapper {
     fun map(stream: Stream): BroadcastData {
         val startedAt = stream.startedAtInstant.atZone(systemZoneId).format(timeFormatter)
         val thumbnailUrl = stream.getThumbnailUrl(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT) + "?t=${System.currentTimeMillis()}"
-        val uptime = LocalTime.MIN.plus(stream.uptime).format(timeFormatter)
+        val uptime = stream.uptime.formatUptime()
 
         return BroadcastData(
             stream.userLogin,
@@ -29,4 +30,7 @@ object StreamToBroadcastDataMapper {
             uptime
         )
     }
+
+    private fun Duration.formatUptime() =
+        String.format(Locale.ROOT, "%02d:%02d", toHours(), toMinutesPart())
 }

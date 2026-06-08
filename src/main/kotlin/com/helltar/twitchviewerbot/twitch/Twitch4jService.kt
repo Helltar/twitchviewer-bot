@@ -7,6 +7,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 class Twitch4jService(config: TwitchConfig) {
 
     private companion object {
+        const val MAX_STREAMS_PER_REQUEST = 100
         val log = KotlinLogging.logger {}
     }
 
@@ -19,12 +20,17 @@ class Twitch4jService(config: TwitchConfig) {
             .build()
 
     fun fetchActiveStreams(userLogins: List<String>): List<BroadcastData> {
-        if (userLogins.isEmpty())
+        val uniqueLogins =
+            userLogins
+                .filter { it.isNotBlank() }
+                .distinctBy { it.lowercase() }
+
+        if (uniqueLogins.isEmpty())
             return emptyList()
 
         return try {
-            userLogins
-                .chunked(100)
+            uniqueLogins
+                .chunked(MAX_STREAMS_PER_REQUEST)
                 .flatMap { loginsChunk ->
                     twitchClient.helix
                         .getStreams(null, null, null, loginsChunk.size, null, null, null, loginsChunk)
@@ -33,7 +39,7 @@ class Twitch4jService(config: TwitchConfig) {
                         .map(StreamToBroadcastDataMapper::map)
                 }
         } catch (e: Exception) {
-            log.error(e) { "failed to fetch active Twitch streams for ${userLogins.size} channel(s)" }
+            log.error(e) { "failed to fetch active Twitch streams for ${uniqueLogins.size} channel(s)" }
             throw e
         }
     }
