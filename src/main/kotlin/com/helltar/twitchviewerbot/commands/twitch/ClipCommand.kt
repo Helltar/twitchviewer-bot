@@ -108,11 +108,12 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
 
         try {
             jobs.joinAll()
-        } catch (e: CancellationException) {
-            log.warn { "cancel all user-$userId jobs (${jobs.size}) and destroy processes (${processes.size}): ${e.message}" }
-            processes.forEach { it.kill() }
         } finally {
-            processes.clear()
+            if (processes.isNotEmpty()) {
+                log.warn { "destroying ${processes.size} leftover process(es) for user-$userId" }
+                processes.forEach { it.kill() }
+                processes.clear()
+            }
             deleteMessageAsync(statusMessageId)
         }
     }
@@ -138,6 +139,8 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
                 replyToMessageWithVideo(ffmpegFile, createHtmlCaption(stream))
             else
                 replyToMessage(localizedString(Strings.GET_CLIP_FAIL))
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             log.warn { "error processing clip for $channelLogin: ${e.message}" }
         } finally {

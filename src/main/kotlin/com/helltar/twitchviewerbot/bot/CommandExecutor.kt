@@ -9,13 +9,15 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import java.util.concurrent.ConcurrentHashMap
 
 object CommandExecutor {
 
-    private val scope = CoroutineScope(Dispatchers.IO)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val requestsMap = ConcurrentHashMap<String, Job>()
 
     private val log = KotlinLogging.logger {}
@@ -39,28 +41,32 @@ object CommandExecutor {
     }
 
     fun launch(key: String, task: suspend () -> Unit): Boolean {
-        if (requestsMap.containsKey(key))
-            if (requestsMap[key]?.isCompleted == false)
-                return false
+        var started = false
 
-        log.debug { "launch --> $key" }
+        // atomic check-and-insert: only one active job per key at a time
+        requestsMap.compute(key) { _, existing ->
+            if (existing != null && !existing.isCompleted)
+                existing
+            else
+                scope.launch {
+                    try {
+                        task()
+                    } catch (e: CancellationException) {
+                        log.debug { "job cancelled --> $key" }
+                        throw e
+                    } catch (e: Exception) {
+                        log.error(e) { "job failed --> $key" }
+                    } finally {
+                        requestsMap.remove(key, coroutineContext.job)
+                        log.debug { "remove --> $key (${requestsMap.size})" }
+                    }
+                }.also { started = true }
+        }
 
-        requestsMap[key] =
-            scope.launch {
-                try {
-                    task()
-                } catch (e: CancellationException) {
-                    log.debug { "job cancelled --> $key" }
-                    throw e
-                } catch (e: Exception) {
-                    log.error(e) { "job failed --> $key" }
-                } finally {
-                    requestsMap.remove(key)
-                    log.debug { "remove --> $key (${requestsMap.size})" }
-                }
-            }
+        if (started)
+            log.debug { "launch --> $key" }
 
-        return true
+        return started
     }
 
     fun cancelJobs(ctx: MessageContext) {
