@@ -32,7 +32,7 @@ dependencies {
 }
 
 application {
-    mainClass.set("com.helltar.twitchviewerbot.bot.TwitchViewerBot")
+    mainClass.set("com.helltar.twitchviewerbot.MainKt")
 }
 
 kotlin {

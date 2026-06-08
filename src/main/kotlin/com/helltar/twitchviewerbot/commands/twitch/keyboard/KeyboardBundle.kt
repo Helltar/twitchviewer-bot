@@ -7,6 +7,8 @@ import com.annimon.tgbotsmodule.commands.authority.For
 import com.annimon.tgbotsmodule.commands.context.CallbackQueryContext
 import com.helltar.twitchviewerbot.Strings
 import com.helltar.twitchviewerbot.Strings.localizedString
+import com.helltar.twitchviewerbot.bot.BotContext
+import com.helltar.twitchviewerbot.bot.BotDependencies
 import com.helltar.twitchviewerbot.bot.CommandExecutor
 import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.BUTTON_BACK
 import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.BUTTON_CHANNEL
@@ -20,7 +22,7 @@ import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.BUTT
 import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.parseOwnerId
 import io.github.oshai.kotlinlogging.KotlinLogging
 
-class KeyboardBundle : CommandBundle<For> {
+class KeyboardBundle(private val dependencies: BotDependencies) : CommandBundle<For> {
 
     private companion object {
         private val log = KotlinLogging.logger {}
@@ -55,7 +57,8 @@ class KeyboardBundle : CommandBundle<For> {
 
         val launch =
             CommandExecutor.launch("$buttonId@$ownerId") {
-                val inlineKeyboard = InlineKeyboard(ctx.apply { update().message = ctx.message() }, ownerId)
+                val inlineKeyboard =
+                    InlineKeyboard(BotContext(ctx.apply { update().message = ctx.message() }, dependencies), ownerId)
 
                 when (buttonId) {
                     BUTTON_CHANNEL -> inlineKeyboard.channel()

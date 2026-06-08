@@ -1,23 +1,24 @@
 package com.helltar.twitchviewerbot.twitch
 
 import com.github.twitch4j.TwitchClientBuilder
-import com.helltar.twitchviewerbot.Config.twitchClientId
-import com.helltar.twitchviewerbot.Config.twitchClientSecret
+import com.helltar.twitchviewerbot.TwitchConfig
 import io.github.oshai.kotlinlogging.KotlinLogging
 
-object Twitch4jService : TwitchService {
+class Twitch4jService(config: TwitchConfig) {
+
+    private companion object {
+        val log = KotlinLogging.logger {}
+    }
 
     private val twitchClient =
         TwitchClientBuilder
             .builder()
-            .withClientId(twitchClientId)
-            .withClientSecret(twitchClientSecret)
+            .withClientId(config.clientId)
+            .withClientSecret(config.clientSecret)
             .withEnableHelix(true)
             .build()
 
-    private val log = KotlinLogging.logger {}
-
-    override fun fetchActiveStreams(userLogins: List<String>): List<BroadcastData> {
+    fun fetchActiveStreams(userLogins: List<String>): List<BroadcastData> {
         if (userLogins.isEmpty())
             return emptyList()
 

@@ -5,8 +5,7 @@ import com.annimon.tgbotsmodule.BotModuleOptions
 import com.annimon.tgbotsmodule.commands.CommandRegistry
 import com.annimon.tgbotsmodule.commands.SimpleCommand
 import com.annimon.tgbotsmodule.commands.authority.SimpleAuthority
-import com.helltar.twitchviewerbot.Config.botUsername
-import com.helltar.twitchviewerbot.Config.creatorId
+import com.annimon.tgbotsmodule.commands.context.MessageContext
 import com.helltar.twitchviewerbot.bot.CommandExecutor.cancelJobs
 import com.helltar.twitchviewerbot.bot.CommandExecutor.executeCommand
 import com.helltar.twitchviewerbot.commands.simple.AboutCommand
@@ -22,10 +21,13 @@ import com.helltar.twitchviewerbot.commands.twitch.keyboard.KeyboardBundle
 import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod
 import org.telegram.telegrambots.meta.api.objects.Update
 
-class TwitchViewerBotHandler(botModuleOptions: BotModuleOptions) : BotHandler(botModuleOptions) {
+class TwitchViewerBotHandler(
+    botModuleOptions: BotModuleOptions,
+    private val dependencies: BotDependencies
+) : BotHandler(botModuleOptions) {
 
-    private val authority = SimpleAuthority(creatorId)
-    private val commandRegistry = CommandRegistry(botUsername, authority)
+    private val authority = SimpleAuthority(dependencies.settings.creatorId)
+    private val commandRegistry = CommandRegistry(dependencies.settings.username, authority)
 
     init {
         commandRegistry.run {
@@ -33,13 +35,13 @@ class TwitchViewerBotHandler(botModuleOptions: BotModuleOptions) : BotHandler(bo
             register(SimpleCommand("/help") { executeCommand(HelpCommand(it)) })
             register(SimpleCommand("/about") { executeCommand(AboutCommand(it)) })
 
-            register(SimpleCommand("/clip") { executeCommand(ClipCommand(it), BUTTON_CLIPS) })
-            register(SimpleCommand("/screenshot") { executeCommand(ScreenshotCommand(it), BUTTON_SCREEN) })
-            register(SimpleCommand("/add") { executeCommand(AddCommand(it)) })
-            register(SimpleCommand("/list") { executeCommand(ListCommand(it)) })
+            register(SimpleCommand("/clip") { executeCommand(ClipCommand(botContext(it)), BUTTON_CLIPS) })
+            register(SimpleCommand("/screenshot") { executeCommand(ScreenshotCommand(botContext(it)), BUTTON_SCREEN) })
+            register(SimpleCommand("/add") { executeCommand(AddCommand(botContext(it))) })
+            register(SimpleCommand("/list") { executeCommand(ListCommand(botContext(it))) })
             register(SimpleCommand("/cancel") { cancelJobs(it) })
 
-            registerBundle(KeyboardBundle())
+            registerBundle(KeyboardBundle(dependencies))
         }
     }
 
@@ -47,4 +49,7 @@ class TwitchViewerBotHandler(botModuleOptions: BotModuleOptions) : BotHandler(bo
         commandRegistry.handleUpdate(this, update)
         return null
     }
+
+    private fun botContext(ctx: MessageContext) =
+        BotContext(ctx, dependencies)
 }

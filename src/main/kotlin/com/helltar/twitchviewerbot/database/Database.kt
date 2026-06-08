@@ -1,10 +1,6 @@
 package com.helltar.twitchviewerbot.database
 
-import com.helltar.twitchviewerbot.Config.databaseName
-import com.helltar.twitchviewerbot.Config.databasePassword
-import com.helltar.twitchviewerbot.Config.databaseUser
-import com.helltar.twitchviewerbot.Config.postgresqlHost
-import com.helltar.twitchviewerbot.Config.postgresqlPort
+import com.helltar.twitchviewerbot.DatabaseConfig
 import com.helltar.twitchviewerbot.database.tables.UserChannelsTable
 import com.helltar.twitchviewerbot.database.tables.UsersTable
 import kotlinx.coroutines.Dispatchers
@@ -18,9 +14,9 @@ import java.time.Instant
 
 object Database {
 
-    fun init() {
-        val url = "r2dbc:postgresql://$postgresqlHost:$postgresqlPort/$databaseName"
-        val database = R2dbcDatabase.connect(url, user = databaseUser, password = databasePassword)
+    fun init(config: DatabaseConfig) {
+        val url = "r2dbc:postgresql://${config.host}:${config.port}/${config.name}"
+        val database = R2dbcDatabase.connect(url, user = config.user, password = config.password)
 
         runBlocking {
             suspendTransaction(database) {

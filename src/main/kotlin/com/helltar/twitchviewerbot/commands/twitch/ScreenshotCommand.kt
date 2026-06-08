@@ -2,13 +2,14 @@ package com.helltar.twitchviewerbot.commands.twitch
 
 import com.annimon.tgbotsmodule.commands.context.MessageContext
 import com.helltar.twitchviewerbot.Strings
+import com.helltar.twitchviewerbot.bot.BotContext
 import com.helltar.twitchviewerbot.commands.TwitchCommand
 import com.helltar.twitchviewerbot.twitch.BroadcastData
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto
 import java.net.URI
 
-class ScreenshotCommand(ctx: MessageContext) : TwitchCommand(ctx) {
+class ScreenshotCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botContext) {
 
     override suspend fun run() {
         if (arguments.isEmpty()) {

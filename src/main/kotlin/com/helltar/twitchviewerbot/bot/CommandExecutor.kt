@@ -5,6 +5,7 @@ import com.helltar.twitchviewerbot.Strings
 import com.helltar.twitchviewerbot.commands.BotCommand
 import com.helltar.twitchviewerbot.database.dao.usersDao
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -48,8 +49,11 @@ object CommandExecutor {
             scope.launch {
                 try {
                     task()
+                } catch (e: CancellationException) {
+                    log.debug { "job cancelled --> $key" }
+                    throw e
                 } catch (e: Exception) {
-                    log.error { "job --> $key: ${e.message}" }
+                    log.error(e) { "job failed --> $key" }
                 } finally {
                     requestsMap.remove(key)
                     log.debug { "remove --> $key (${requestsMap.size})" }

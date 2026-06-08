@@ -2,6 +2,7 @@ package com.helltar.twitchviewerbot.commands.twitch
 
 import com.annimon.tgbotsmodule.commands.context.MessageContext
 import com.helltar.twitchviewerbot.Strings
+import com.helltar.twitchviewerbot.bot.BotContext
 import com.helltar.twitchviewerbot.commands.TwitchCommand
 import com.helltar.twitchviewerbot.twitch.BroadcastData
 import com.helltar.twitchviewerbot.utils.ProcessUtils.ffmpegPrepareClip
@@ -15,7 +16,7 @@ import java.io.File
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
 
-class ClipCommand(ctx: MessageContext) : TwitchCommand(ctx) {
+class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botContext) {
 
     private companion object {
         const val MAX_CONCURRENT_CLIPS = 3

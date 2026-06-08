@@ -2,13 +2,13 @@ package com.helltar.twitchviewerbot.commands.twitch.keyboard
 
 import com.annimon.tgbotsmodule.commands.context.CallbackQueryContext
 import com.annimon.tgbotsmodule.commands.context.MessageContext
-import com.helltar.twitchviewerbot.Config
 import com.helltar.twitchviewerbot.Strings
 import com.helltar.twitchviewerbot.Strings.BTN_BACK
 import com.helltar.twitchviewerbot.Strings.BTN_DELETE
 import com.helltar.twitchviewerbot.Strings.BTN_EXIT
 import com.helltar.twitchviewerbot.Strings.BTN_SHORT_CLIP
 import com.helltar.twitchviewerbot.Strings.localizedString
+import com.helltar.twitchviewerbot.bot.BotContext
 import com.helltar.twitchviewerbot.commands.twitch.ClipCommand
 import com.helltar.twitchviewerbot.commands.twitch.ScreenshotCommand
 import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.BUTTON_BACK
@@ -26,19 +26,16 @@ import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.pars
 import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.string
 import com.helltar.twitchviewerbot.database.dao.userChannelsDao
 import com.helltar.twitchviewerbot.database.dao.usersDao
-import com.helltar.twitchviewerbot.twitch.Twitch4jService
-import com.helltar.twitchviewerbot.twitch.TwitchService
 import com.helltar.twitchviewerbot.utils.StringUtils.toTwitchHtmlLink
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow
 
-class InlineKeyboard(
-    private val ctx: CallbackQueryContext,
-    private val ownerId: Long,
-    private val twitchService: TwitchService = Twitch4jService
-) {
+class InlineKeyboard(botContext: BotContext<CallbackQueryContext>, private val ownerId: Long) {
+
+    private val ctx = botContext.ctx
+    private val dependencies = botContext.dependencies
 
     private companion object {
         const val CHANNELS_PER_PAGE = 8
@@ -77,26 +74,26 @@ class InlineKeyboard(
     }
 
     suspend fun close() {
-        val text = localizedString(Strings.USER_CLOSE_LIST).format(ctx.user().firstName, Config.botUsername)
+        val text = localizedString(Strings.USER_CLOSE_LIST).format(ctx.user().firstName, dependencies.settings.username)
         editMessage(text)
     }
 
     suspend fun clip() {
-        ClipCommand(messageContext).clip(channelName)
+        ClipCommand(BotContext(messageContext, dependencies)).clip(channelName)
     }
 
     suspend fun clips() {
         val channels = userChannelsDao.list(ownerId)
 
         if (channels.isNotEmpty())
-            ClipCommand(messageContext).fetchAndSendClips(channels)
+            ClipCommand(BotContext(messageContext, dependencies)).fetchAndSendClips(channels)
     }
 
     suspend fun screenshot() {
         val channels = userChannelsDao.list(ownerId)
 
         if (channels.isNotEmpty())
-            ScreenshotCommand(messageContext).fetchAndSendScreenshots(channels)
+            ScreenshotCommand(BotContext(messageContext, dependencies)).fetchAndSendScreenshots(channels)
     }
 
     suspend fun deleteChannel() {
@@ -113,7 +110,7 @@ class InlineKeyboard(
 
     suspend fun mainMenu(): InlineKeyboardMarkup {
         val userChannels = userChannelsDao.list(ownerId)
-        val onlineList = runCatching { twitchService.fetchActiveStreams(userChannels) }.getOrDefault(emptyList())
+        val onlineList = runCatching { dependencies.twitchService.fetchActiveStreams(userChannels) }.getOrDefault(emptyList())
         val liveStreams = onlineList.map { it.login.lowercase() }
         val sortedChannels = userChannels.sortedByDescending { it in liveStreams }
         val paginatedChannels = sortedChannels.chunked(CHANNELS_PER_PAGE)

@@ -1,12 +1,12 @@
 package com.helltar.twitchviewerbot.commands.twitch
 
 import com.annimon.tgbotsmodule.commands.context.MessageContext
-import com.helltar.twitchviewerbot.Config.botUsername
 import com.helltar.twitchviewerbot.Strings
+import com.helltar.twitchviewerbot.bot.BotContext
 import com.helltar.twitchviewerbot.commands.TwitchCommand
 import com.helltar.twitchviewerbot.database.dao.userChannelsDao
 
-class AddCommand(ctx: MessageContext) : TwitchCommand(ctx) {
+class AddCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botContext) {
 
     private companion object {
         const val MAX_SAVED_CHANNELS_PER_USER = 32
@@ -19,7 +19,7 @@ class AddCommand(ctx: MessageContext) : TwitchCommand(ctx) {
         if (arguments.isNotEmpty())
             add(arguments.first())
         else
-            replyToMessage(localizedString(Strings.ADD_COMMAND_INFO).format(botUsername))
+            replyToMessage(localizedString(Strings.ADD_COMMAND_INFO).format(dependencies.settings.username))
     }
 
     private suspend fun add(channel: String) {
@@ -30,11 +30,11 @@ class AddCommand(ctx: MessageContext) : TwitchCommand(ctx) {
 
         if (userChannelsListSize < MAX_SAVED_CHANNELS_PER_USER) {
             if (addChannelToUserList(channel))
-                replyToMessage(localizedString(Strings.CHANNEL_ADDED_TO_LIST).format(channel, botUsername))
+                replyToMessage(localizedString(Strings.CHANNEL_ADDED_TO_LIST).format(channel, dependencies.settings.username))
             else
                 replyToMessage(localizedString(Strings.CHANNEL_ALREADY_EXISTS_IN_LIST).format(channel))
         } else
-            replyToMessage(localizedString(Strings.LIST_FULL).format(botUsername))
+            replyToMessage(localizedString(Strings.LIST_FULL).format(dependencies.settings.username))
     }
 
     private suspend fun addChannelToUserList(channel: String) =
