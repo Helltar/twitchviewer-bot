@@ -29,7 +29,7 @@ object CommandExecutor {
         log.info { "$commandName: ${chat.id} $userId ${user.userName} ${user.firstName} ${chat.title}: ${botCommand.ctx.message().text}" }
 
         val launch =
-            launch("${requestKey ?: commandName}@$userId") {
+            launch(RequestKey.forUser(requestKey ?: commandName, userId)) {
                 usersDao.upsert(user)
                 botCommand.run()
             }

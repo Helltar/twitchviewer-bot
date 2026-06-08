@@ -5,11 +5,12 @@ import com.helltar.twitchviewerbot.Strings
 import com.helltar.twitchviewerbot.bot.BotContext
 import com.helltar.twitchviewerbot.bot.BotDependencies
 import com.helltar.twitchviewerbot.database.dao.userChannelsDao
-import com.helltar.twitchviewerbot.twitch.BroadcastData
+import com.helltar.twitchviewerbot.twitch.StreamInfo
 import com.helltar.twitchviewerbot.utils.StringUtils.toHashTag
 import com.helltar.twitchviewerbot.utils.StringUtils.toTwitchHtmlLink
 
-abstract class TwitchCommand(botContext: BotContext<MessageContext>) : BotCommand(botContext.ctx) {
+abstract class TwitchCommand(botContext: BotContext<MessageContext>) :
+    BotCommand(botContext.ctx, botContext.actor.id, botContext.actor.languageCode) {
 
     protected val dependencies: BotDependencies = botContext.dependencies
     protected val twitchService = dependencies.twitchService
@@ -31,14 +32,14 @@ abstract class TwitchCommand(botContext: BotContext<MessageContext>) : BotComman
         return true
     }
 
-    protected fun createHtmlCaption(broadcastData: BroadcastData): String {
-        val username = broadcastData.username
-        val category = broadcastData.gameName
+    protected fun createHtmlCaption(stream: StreamInfo): String {
+        val username = stream.username
+        val category = stream.gameName
 
-        val title = "${broadcastData.login.toTwitchHtmlLink(username)} - ${broadcastData.title}\n\n"
+        val title = "${stream.login.toTwitchHtmlLink(username)} - ${stream.title}\n\n"
         val categoryTag = if (category.isNotEmpty()) ", #${category.toHashTag()}" else ""
-        val startTime = localizedString(Strings.STREAM_START_TIME).format(broadcastData.uptime) + "\n\n"
-        val viewersCount = localizedString(Strings.STREAM_VIEWERS).format(broadcastData.viewerCount) + "\n"
+        val startTime = localizedString(Strings.STREAM_START_TIME).format(stream.uptime) + "\n\n"
+        val viewersCount = localizedString(Strings.STREAM_VIEWERS).format(stream.viewerCount) + "\n"
 
         return "$title$viewersCount$startTime#$username$categoryTag"
     }

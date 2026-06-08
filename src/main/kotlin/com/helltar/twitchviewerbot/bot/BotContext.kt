@@ -1,7 +1,7 @@
 package com.helltar.twitchviewerbot.bot
 
 import com.helltar.twitchviewerbot.TelegramConfig
-import com.helltar.twitchviewerbot.twitch.Twitch4jService
+import com.helltar.twitchviewerbot.twitch.TwitchService
 
 data class BotSettings(
     val creatorId: Long,
@@ -10,10 +10,12 @@ data class BotSettings(
 
 data class BotDependencies(
     val settings: BotSettings,
-    val twitchService: Twitch4jService
+    val twitchService: TwitchService
 )
 
-data class BotContext<T>(val ctx: T, val dependencies: BotDependencies)
+data class Actor(val id: Long, val languageCode: String?)
+
+data class BotContext<T>(val ctx: T, val dependencies: BotDependencies, val actor: Actor)
 
 fun TelegramConfig.toBotSettings() =
     BotSettings(creatorId, username)

@@ -10,7 +10,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-class Twitch4jService(config: TwitchConfig) {
+class TwitchService(config: TwitchConfig) {
 
     private companion object {
         const val MAX_STREAMS_PER_REQUEST = 100
@@ -29,7 +29,7 @@ class Twitch4jService(config: TwitchConfig) {
             .withEnableHelix(true)
             .build()
 
-    fun fetchActiveStreams(userLogins: List<String>): List<BroadcastData> {
+    fun fetchActiveStreams(userLogins: List<String>): List<StreamInfo> {
         val uniqueLogins =
             userLogins
                 .filter { it.isNotBlank() }
@@ -54,12 +54,12 @@ class Twitch4jService(config: TwitchConfig) {
         }
     }
 
-    private fun mapStream(stream: Stream): BroadcastData {
+    private fun mapStream(stream: Stream): StreamInfo {
         val startedAt = stream.startedAtInstant.atZone(systemZoneId).format(timeFormatter)
         val thumbnailUrl = stream.getThumbnailUrl(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT) + "?t=${System.currentTimeMillis()}"
         val uptime = stream.uptime.formatUptime()
 
-        return BroadcastData(
+        return StreamInfo(
             stream.userLogin,
             stream.userName.escapeHtml(),
             stream.title.escapeHtml(),

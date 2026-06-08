@@ -1,6 +1,6 @@
 package com.helltar.twitchviewerbot.twitch
 
-data class BroadcastData(
+data class StreamInfo(
     val login: String,
     val username: String,
     val title: String,

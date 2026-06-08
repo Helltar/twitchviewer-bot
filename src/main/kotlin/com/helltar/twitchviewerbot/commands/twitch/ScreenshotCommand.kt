@@ -4,7 +4,7 @@ import com.annimon.tgbotsmodule.commands.context.MessageContext
 import com.helltar.twitchviewerbot.Strings
 import com.helltar.twitchviewerbot.bot.BotContext
 import com.helltar.twitchviewerbot.commands.TwitchCommand
-import com.helltar.twitchviewerbot.twitch.BroadcastData
+import com.helltar.twitchviewerbot.twitch.StreamInfo
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto
 import java.net.URI
@@ -45,8 +45,8 @@ class ScreenshotCommand(botContext: BotContext<MessageContext>) : TwitchCommand(
                     if (chunk.size > 1)
                         replyToMessageWithMediaGroup(chunk.map { buildMediaPhoto(it) })
                     else {
-                        val broadcastData = chunk.first()
-                        replyToMessageWithPhoto(broadcastData.thumbnailUrl, createHtmlCaption(broadcastData))
+                        val stream = chunk.first()
+                        replyToMessageWithPhoto(stream.thumbnailUrl, createHtmlCaption(stream))
                     }
                 }
             } else
@@ -56,12 +56,12 @@ class ScreenshotCommand(botContext: BotContext<MessageContext>) : TwitchCommand(
         }
     }
 
-    private fun buildMediaPhoto(broadcastData: BroadcastData): InputMediaPhoto {
-        val caption = createHtmlCaption(broadcastData)
-        val inputStream = URI.create(broadcastData.thumbnailUrl).toURL().openStream()
+    private fun buildMediaPhoto(stream: StreamInfo): InputMediaPhoto {
+        val caption = createHtmlCaption(stream)
+        val inputStream = URI.create(stream.thumbnailUrl).toURL().openStream()
 
         return InputMediaPhoto.builder()
-            .media(inputStream, broadcastData.thumbnailUrl)
+            .media(inputStream, stream.thumbnailUrl)
             .caption(caption)
             .parseMode(ParseMode.HTML)
             .build()

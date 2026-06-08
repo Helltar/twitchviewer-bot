@@ -5,7 +5,7 @@ import com.helltar.twitchviewerbot.bot.BotDependencies
 import com.helltar.twitchviewerbot.bot.TwitchViewerBot
 import com.helltar.twitchviewerbot.bot.toBotSettings
 import com.helltar.twitchviewerbot.database.Database
-import com.helltar.twitchviewerbot.twitch.Twitch4jService
+import com.helltar.twitchviewerbot.twitch.TwitchService
 
 fun main(args: Array<String>) {
     Database.init(Config.database)
@@ -15,7 +15,7 @@ fun main(args: Array<String>) {
     val dependencies =
         BotDependencies(
             settings = telegram.toBotSettings(),
-            twitchService = Twitch4jService(Config.twitch)
+            twitchService = TwitchService(Config.twitch)
         )
 
     Runner.run(args.firstOrNull().orEmpty(), listOf(TwitchViewerBot(telegram.token, dependencies)))

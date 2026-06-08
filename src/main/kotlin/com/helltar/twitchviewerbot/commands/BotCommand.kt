@@ -9,9 +9,12 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import java.io.File
 import java.net.URI
 
-abstract class BotCommand(val ctx: MessageContext) {
+abstract class BotCommand(
+    val ctx: MessageContext,
+    protected val userId: Long = ctx.user().id,
+    private val languageCode: String? = ctx.user().languageCode
+) {
 
-    protected val userId: Long = ctx.user().id
     protected val arguments: Array<String> = ctx.arguments()
 
     abstract suspend fun run()
@@ -52,5 +55,5 @@ abstract class BotCommand(val ctx: MessageContext) {
     }
 
     protected fun localizedString(key: String) =
-        Strings.localizedString(key, ctx.message().from.languageCode)
+        Strings.localizedString(key, languageCode)
 }

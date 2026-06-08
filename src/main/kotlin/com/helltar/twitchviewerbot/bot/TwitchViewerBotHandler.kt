@@ -15,9 +15,7 @@ import com.helltar.twitchviewerbot.commands.twitch.AddCommand
 import com.helltar.twitchviewerbot.commands.twitch.ClipCommand
 import com.helltar.twitchviewerbot.commands.twitch.ListCommand
 import com.helltar.twitchviewerbot.commands.twitch.ScreenshotCommand
-import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.BUTTON_CLIPS
-import com.helltar.twitchviewerbot.commands.twitch.keyboard.ButtonCallbacks.BUTTON_SCREEN
-import com.helltar.twitchviewerbot.commands.twitch.keyboard.KeyboardBundle
+import com.helltar.twitchviewerbot.commands.twitch.menu.MenuHandler
 import org.telegram.telegrambots.meta.api.methods.botapimethods.BotApiMethod
 import org.telegram.telegrambots.meta.api.objects.Update
 
@@ -35,13 +33,13 @@ class TwitchViewerBotHandler(
             register(SimpleCommand("/help") { executeCommand(HelpCommand(it)) })
             register(SimpleCommand("/about") { executeCommand(AboutCommand(it)) })
 
-            register(SimpleCommand("/clip") { executeCommand(ClipCommand(botContext(it)), BUTTON_CLIPS) })
-            register(SimpleCommand("/screenshot") { executeCommand(ScreenshotCommand(botContext(it)), BUTTON_SCREEN) })
+            register(SimpleCommand("/clip") { executeCommand(ClipCommand(botContext(it)), RequestKey.CLIP) })
+            register(SimpleCommand("/screenshot") { executeCommand(ScreenshotCommand(botContext(it)), RequestKey.SCREENSHOT) })
             register(SimpleCommand("/add") { executeCommand(AddCommand(botContext(it))) })
             register(SimpleCommand("/list") { executeCommand(ListCommand(botContext(it))) })
             register(SimpleCommand("/cancel") { cancelJobs(it) })
 
-            registerBundle(KeyboardBundle(dependencies))
+            registerBundle(MenuHandler(dependencies))
         }
     }
 
@@ -51,5 +49,5 @@ class TwitchViewerBotHandler(
     }
 
     private fun botContext(ctx: MessageContext) =
-        BotContext(ctx, dependencies)
+        BotContext(ctx, dependencies, Actor(ctx.user().id, ctx.user().languageCode))
 }

@@ -4,7 +4,7 @@ import com.annimon.tgbotsmodule.commands.context.MessageContext
 import com.helltar.twitchviewerbot.Strings
 import com.helltar.twitchviewerbot.bot.BotContext
 import com.helltar.twitchviewerbot.commands.TwitchCommand
-import com.helltar.twitchviewerbot.twitch.BroadcastData
+import com.helltar.twitchviewerbot.twitch.StreamInfo
 import com.helltar.twitchviewerbot.utils.ProcessUtils.ffmpegPrepareClip
 import com.helltar.twitchviewerbot.utils.ProcessUtils.kill
 import com.helltar.twitchviewerbot.utils.ProcessUtils.startStreamlinkProcess
@@ -88,21 +88,21 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
     suspend fun clip(channel: String) =
         fetchAndSendClips(listOf(channel))
 
-    private suspend fun retrieveAndSendClips(broadcasts: List<BroadcastData>) = coroutineScope {
-        broadcasts.chunked(MAX_CONCURRENT_CLIPS).forEach { chunk ->
+    private suspend fun retrieveAndSendClips(streams: List<StreamInfo>) = coroutineScope {
+        streams.chunked(MAX_CONCURRENT_CLIPS).forEach { chunk ->
             ensureActive()
             processClipBatch(chunk)
         }
     }
 
-    private suspend fun processClipBatch(chunk: List<BroadcastData>) = coroutineScope {
+    private suspend fun processClipBatch(chunk: List<StreamInfo>) = coroutineScope {
         val channelLinks = chunk.joinToString { it.login.toTwitchHtmlLink(it.username) }
         val statusMessageId = replyToMessage(localizedString(Strings.START_GET_CLIP).format(channelLinks))
 
         val jobs =
-            chunk.map { broadcastData ->
+            chunk.map { stream ->
                 launch {
-                    downloadAndSendClip(broadcastData)
+                    downloadAndSendClip(stream)
                 }
             }
 
@@ -117,8 +117,8 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
         }
     }
 
-    private suspend fun downloadAndSendClip(broadcastData: BroadcastData) {
-        val channelLogin = broadcastData.login
+    private suspend fun downloadAndSendClip(stream: StreamInfo) {
+        val channelLogin = stream.login
         val tempName = channelLogin.plusUUID()
         val streamlinkFile = generateOutputFilename("streamlink", tempName)
         val ffmpegFile = generateOutputFilename("ffmpeg", tempName)
@@ -135,7 +135,7 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
             }
 
             if (File(ffmpegFile).exists())
-                replyToMessageWithVideo(ffmpegFile, createHtmlCaption(broadcastData))
+                replyToMessageWithVideo(ffmpegFile, createHtmlCaption(stream))
             else
                 replyToMessage(localizedString(Strings.GET_CLIP_FAIL))
         } catch (e: Exception) {
