@@ -10,6 +10,7 @@ import com.helltar.twitchviewerbot.utils.ProcessUtils.kill
 import com.helltar.twitchviewerbot.utils.ProcessUtils.startStreamlinkProcess
 import com.helltar.twitchviewerbot.utils.StringUtils.plusUUID
 import com.helltar.twitchviewerbot.utils.StringUtils.toTwitchHtmlLink
+import com.helltar.twitchviewerbot.utils.runCatchingPreservingCancellation
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
 import java.io.File
@@ -73,7 +74,7 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
 
     suspend fun fetchAndSendClips(userLogins: List<String>) {
         val activeStreams =
-            runCatching { twitchService.fetchActiveStreams(userLogins) }
+            runCatchingPreservingCancellation { twitchService.fetchActiveStreams(userLogins) }
                 .getOrElse {
                     replyToMessage(localizedString(Strings.TWITCH_EXCEPTION))
                     return
@@ -125,15 +126,11 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
         val ffmpegFile = generateOutputFilename("ffmpeg", tempName)
 
         try {
-            ensureActive {
-                startStreamlinkProcess(channelLogin, streamlinkFile)
-                    .wait(CLIP_DURATION_SEC)
-            }
+            startStreamlinkProcess(channelLogin, streamlinkFile).waitForExit(CLIP_DURATION_SEC)
+            currentCoroutineContext().ensureActive()
 
-            ensureActive {
-                ffmpegPrepareClip(streamlinkFile, ffmpegFile, CLIP_DURATION_SEC)
-                    .wait(FFMPEG_TIMEOUT_SEC)
-            }
+            ffmpegPrepareClip(streamlinkFile, ffmpegFile, CLIP_DURATION_SEC).waitForExit(FFMPEG_TIMEOUT_SEC)
+            currentCoroutineContext().ensureActive()
 
             if (File(ffmpegFile).exists())
                 replyToMessageWithVideo(ffmpegFile, createHtmlCaption(stream))
@@ -149,17 +146,15 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
         }
     }
 
-    private suspend inline fun ensureActive(block: () -> Unit) {
-        block()
-        currentCoroutineContext().ensureActive()
-    }
-
-    private fun Process.wait(timeout: Long) {
+    private suspend fun Process.waitForExit(timeout: Long) {
         processes.add(this)
 
         try {
-            if (!this.waitFor(timeout, TimeUnit.SECONDS))
-                this.destroy()
+            if (!runInterruptible(Dispatchers.IO) { waitFor(timeout, TimeUnit.SECONDS) })
+                kill()
+        } catch (e: CancellationException) {
+            kill()
+            throw e
         } finally {
             processes.remove(this)
         }

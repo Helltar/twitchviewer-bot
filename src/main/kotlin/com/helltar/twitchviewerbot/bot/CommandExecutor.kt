@@ -37,7 +37,7 @@ object CommandExecutor {
             }
 
         if (!launch)
-            botCommand.replyToMessage(Strings.localizedString(Strings.MANY_REQUEST, user.languageCode))
+            botCommand.replyToMessageAsync(Strings.localizedString(Strings.MANY_REQUEST, user.languageCode))
     }
 
     fun launch(key: String, task: suspend () -> Unit): Boolean {

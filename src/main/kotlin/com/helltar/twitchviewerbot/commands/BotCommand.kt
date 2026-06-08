@@ -27,6 +27,14 @@ abstract class BotCommand(
             .call(ctx.sender)
             .messageId
 
+    fun replyToMessageAsync(text: String, webPagePreview: Boolean = false, replyMarkup: InlineKeyboardMarkup? = null) {
+        ctx.replyToMessage(text)
+            .setReplyMarkup(replyMarkup)
+            .setParseMode(ParseMode.HTML)
+            .setWebPagePreviewEnabled(webPagePreview)
+            .callAsync(ctx.sender)
+    }
+
     protected fun replyToMessageWithMediaGroup(media: List<InputMediaPhoto>) {
         ctx.replyWithMediaGroup()
             .setMedias(media)

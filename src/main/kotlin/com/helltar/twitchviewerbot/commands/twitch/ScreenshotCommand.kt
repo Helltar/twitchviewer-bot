@@ -5,6 +5,7 @@ import com.helltar.twitchviewerbot.Strings
 import com.helltar.twitchviewerbot.bot.BotContext
 import com.helltar.twitchviewerbot.commands.TwitchCommand
 import com.helltar.twitchviewerbot.twitch.StreamInfo
+import com.helltar.twitchviewerbot.utils.runCatchingPreservingCancellation
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto
 import java.net.URI
@@ -32,7 +33,7 @@ class ScreenshotCommand(botContext: BotContext<MessageContext>) : TwitchCommand(
 
         try {
             val liveList =
-                runCatching { twitchService.fetchActiveStreams(channels) }
+                runCatchingPreservingCancellation { twitchService.fetchActiveStreams(channels) }
                     .getOrElse {
                         replyToMessage(localizedString(Strings.TWITCH_EXCEPTION))
                         return
