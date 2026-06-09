@@ -19,7 +19,7 @@ class AddCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCont
         if (arguments.isNotEmpty())
             add(arguments.first())
         else
-            replyToMessage(localizedString(Strings.ADD_COMMAND_INFO).format(dependencies.settings.username))
+            replyToMessage(localizedString(Strings.ADD_COMMAND_INFO))
     }
 
     private suspend fun add(channel: String) {
