@@ -52,7 +52,11 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
 
         val started = CommandExecutor.launch(requestKey(callback)) { dispatch(ctx, callback) }
 
-        if (!started)
+        // acknowledge immediately so the client stops showing the button spinner;
+        // long-running actions (clip/screenshot) keep working in the launched job
+        if (started)
+            ctx.answer("").callAsync(ctx.sender)
+        else
             ctx.answer(localizedString(Strings.MANY_REQUEST, user.languageCode)).callAsync(ctx.sender)
     }
 
