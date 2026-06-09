@@ -1,8 +1,8 @@
 [versions]
 dotenv-kotlin = "6.5.1"
 exposed = "1.1.1"
-kotlin = "2.3.10"
-kotlin-logging = "7.0.14"
+kotlin = "2.4.0"
+kotlin-logging = "8.0.4"
 logback = "1.5.27"
 r2dbc-postgresql = "1.1.1.RELEASE"
 shadow = "9.3.0"
