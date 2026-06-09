@@ -107,7 +107,7 @@ class ChannelMenu(
             .keyboardRow(
                 InlineKeyboardRow(
                     button(label(Strings.BTN_BACK), MenuAction.BACK, page = page),
-                    button(label(Strings.BTN_EXIT), MenuAction.CLOSE),
+                    button(label(Strings.BTN_CLOSE_LIST), MenuAction.CLOSE),
                     button(
                         label(Strings.BTN_DELETE),
                         MenuAction.DELETE_CHANNEL,

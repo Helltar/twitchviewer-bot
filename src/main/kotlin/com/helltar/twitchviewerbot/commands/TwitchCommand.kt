@@ -38,9 +38,9 @@ abstract class TwitchCommand(botContext: BotContext<MessageContext>) :
 
         val title = "${stream.login.toTwitchHtmlLink(username)} - ${stream.title}\n\n"
         val categoryTag = if (category.isNotEmpty()) ", #${category.toHashTag()}" else ""
-        val startTime = localizedString(Strings.STREAM_START_TIME).format(stream.uptime) + "\n\n"
+        val uptime = localizedString(Strings.STREAM_UPTIME).format(stream.uptime) + "\n\n"
         val viewersCount = localizedString(Strings.STREAM_VIEWERS).format(stream.viewerCount) + "\n"
 
-        return "$title$viewersCount$startTime#$username$categoryTag"
+        return "$title$viewersCount$uptime#$username$categoryTag"
     }
 }
