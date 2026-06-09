@@ -29,15 +29,15 @@ class TwitchViewerBotHandler(
 
     init {
         commandRegistry.run {
-            register(SimpleCommand("/start") { executeCommand(StartCommand(it)) })
-            register(SimpleCommand("/help") { executeCommand(HelpCommand(it)) })
-            register(SimpleCommand("/about") { executeCommand(AboutCommand(it)) })
-
-            register(SimpleCommand("/clip") { executeCommand(ClipCommand(botContext(it)), RequestKey.CLIP) })
-            register(SimpleCommand("/screenshot") { executeCommand(ScreenshotCommand(botContext(it)), RequestKey.SCREENSHOT) })
             register(SimpleCommand("/add") { executeCommand(AddCommand(botContext(it))) })
+            register(SimpleCommand("/clip") { executeCommand(ClipCommand(botContext(it)), RequestKey.CLIP) })
             register(SimpleCommand("/list") { executeCommand(ListCommand(botContext(it))) })
+            register(SimpleCommand("/screenshot") { executeCommand(ScreenshotCommand(botContext(it)), RequestKey.SCREENSHOT) })
             register(SimpleCommand("/cancel") { cancelJobs(it) })
+
+            register(SimpleCommand("/start") { executeCommand(StartCommand(it)) })
+            register(SimpleCommand("/about") { executeCommand(AboutCommand(it)) })
+            register(SimpleCommand("/help") { executeCommand(HelpCommand(it)) })
 
             registerBundle(MenuHandler(dependencies))
         }
