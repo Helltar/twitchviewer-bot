@@ -8,6 +8,9 @@ import com.helltar.twitchviewerbot.utils.runCatchingPreservingCancellation
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow
+import java.util.concurrent.ConcurrentHashMap
+
+private class CachedLiveLogins(val logins: Set<String>, val expiresAt: Long)
 
 class ChannelMenu(
     private val dependencies: BotDependencies,
@@ -25,6 +28,11 @@ class ChannelMenu(
 
         const val ICON_PREV_PAGE = "⬅️"
         const val ICON_NEXT_PAGE = "➡️"
+
+        // live status is cached per owner so paging/back/delete within one menu
+        // session reuse a single Twitch lookup instead of querying on every click
+        const val LIVE_CACHE_TTL_MS = 30_000L
+        val liveCache = ConcurrentHashMap<Long, CachedLiveLogins>()
     }
 
     suspend fun mainMarkup(page: Int = 0): InlineKeyboardMarkup {
@@ -112,10 +120,22 @@ class ChannelMenu(
             .build()
     }
 
-    private fun fetchLiveLogins(channels: List<String>): Set<String> =
-        runCatchingPreservingCancellation { dependencies.twitchService.fetchActiveStreams(channels) }
-            .getOrDefault(emptyList())
-            .mapTo(mutableSetOf()) { it.login.lowercase() }
+    private fun fetchLiveLogins(channels: List<String>): Set<String> {
+        val now = System.currentTimeMillis()
+
+        liveCache[ownerId]?.let { cached ->
+            if (now < cached.expiresAt) return cached.logins
+        }
+
+        val streams =
+            runCatchingPreservingCancellation { dependencies.twitchService.fetchActiveStreams(channels) }
+                .getOrElse { return emptySet() }
+
+        val logins = streams.mapTo(mutableSetOf()) { it.login.lowercase() }
+        liveCache[ownerId] = CachedLiveLogins(logins, now + LIVE_CACHE_TTL_MS)
+
+        return logins
+    }
 
     private fun navigationRow(currentPage: Int, lastPage: Int): InlineKeyboardRow? {
         val buttons =
