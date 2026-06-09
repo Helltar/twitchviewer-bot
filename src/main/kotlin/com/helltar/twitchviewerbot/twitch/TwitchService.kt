@@ -6,8 +6,6 @@ import com.helltar.twitchviewerbot.TwitchConfig
 import com.helltar.twitchviewerbot.utils.StringUtils.escapeHtml
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.*
 
 class TwitchService(config: TwitchConfig) {
@@ -16,8 +14,6 @@ class TwitchService(config: TwitchConfig) {
         const val MAX_STREAMS_PER_REQUEST = 100
         const val THUMBNAIL_HEIGHT = 1080
         const val THUMBNAIL_WIDTH = 1920
-        val systemZoneId: ZoneId = ZoneId.systemDefault()
-        val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
         val log = KotlinLogging.logger {}
     }
 
@@ -55,7 +51,6 @@ class TwitchService(config: TwitchConfig) {
     }
 
     private fun mapStream(stream: Stream): StreamInfo {
-        val startedAt = stream.startedAtInstant.atZone(systemZoneId).format(timeFormatter)
         val thumbnailUrl = stream.getThumbnailUrl(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT) + "?t=${System.currentTimeMillis()}"
         val uptime = stream.uptime.formatUptime()
 
@@ -66,7 +61,6 @@ class TwitchService(config: TwitchConfig) {
             stream.viewerCount,
             stream.gameName,
             thumbnailUrl,
-            startedAt,
             uptime
         )
     }

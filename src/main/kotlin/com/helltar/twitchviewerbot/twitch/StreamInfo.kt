@@ -7,6 +7,5 @@ data class StreamInfo(
     val viewerCount: Int,
     val gameName: String,
     val thumbnailUrl: String,
-    val startedAt: String,
     val uptime: String
 )
