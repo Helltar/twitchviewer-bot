@@ -2,6 +2,7 @@ package com.helltar.twitchviewerbot.utils
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.TimeUnit
+import kotlin.jvm.optionals.getOrNull
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -37,25 +38,28 @@ object ProcessUtils {
     fun Process.kill(timeout: Duration = 5.seconds) {
         if (!isAlive) return
 
-        val pid = pid()
-        log.warn { "destroying process $pid" }
+        val description = "${commandName()} (pid ${pid()})"
+        log.info { "stopping $description" }
         destroy()
 
         runCatching {
             if (!waitFor(timeout.inWholeSeconds, TimeUnit.SECONDS)) {
-                log.warn { "force destroying process $pid after timeout" }
+                log.warn { "$description didn't exit within $timeout, destroying forcibly" }
                 destroyForcibly().waitFor()
             }
         }.onFailure { e ->
             if (e is InterruptedException) {
                 Thread.currentThread().interrupt()
-                log.warn { "interrupted while waiting process $pid to terminate, forcing destroy" }
+                log.warn { "interrupted while waiting for $description to exit, destroying forcibly" }
             } else
-                log.error(e) { "unexpected error killing process $pid" }
+                log.error(e) { "unexpected error stopping $description" }
 
             destroyForcibly()
         }
     }
+
+    private fun Process.commandName(): String =
+        info().command().getOrNull()?.substringAfterLast('/') ?: "process"
 
     private fun List<String>.startProcessOrThrow(errorMessage: String): Process =
         try {

@@ -111,7 +111,7 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
             jobs.joinAll()
         } finally {
             if (processes.isNotEmpty()) {
-                log.warn { "destroying ${processes.size} leftover process(es) for user-$userId" }
+                log.warn { "stopping ${processes.size} leftover process(es) for user-$userId: pids ${processes.map { it.pid() }}" }
                 processes.forEach { it.kill() }
                 processes.clear()
             }
@@ -126,6 +126,8 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
         val ffmpegFile = generateOutputFilename("ffmpeg", tempName)
 
         try {
+            log.info { "recording ${CLIP_DURATION_SEC}s clip of $channelLogin for user-$userId" }
+
             startStreamlinkProcess(channelLogin, streamlinkFile).waitForExit(CLIP_DURATION_SEC)
             currentCoroutineContext().ensureActive()
 
@@ -150,9 +152,13 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
         processes.add(this)
 
         try {
-            if (!runInterruptible(Dispatchers.IO) { waitFor(timeout, TimeUnit.SECONDS) })
+            if (!runInterruptible(Dispatchers.IO) { waitFor(timeout, TimeUnit.SECONDS) }) {
+                // remove before kill() so the leftover cleanup in processClipBatch can't race and kill it twice
+                processes.remove(this)
                 kill()
+            }
         } catch (e: CancellationException) {
+            processes.remove(this)
             kill()
             throw e
         } finally {
