@@ -59,7 +59,11 @@ object ProcessUtils {
 
     private fun List<String>.startProcessOrThrow(errorMessage: String): Process =
         try {
-            ProcessBuilder(this).start()
+            // nobody reads stdout/stderr, discard them so the pipe buffer can't fill up and block the process
+            ProcessBuilder(this)
+                .redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                .redirectError(ProcessBuilder.Redirect.DISCARD)
+                .start()
         } catch (e: Exception) {
             log.error(e) { "failed to start process: ${joinToString(" ")}" }
             throw RuntimeException(errorMessage, e)

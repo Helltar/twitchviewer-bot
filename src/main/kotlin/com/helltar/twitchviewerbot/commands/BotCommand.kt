@@ -7,7 +7,6 @@ import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto
 import org.telegram.telegrambots.meta.api.objects.message.Message
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import java.io.File
-import java.net.URI
 
 abstract class BotCommand(
     val ctx: MessageContext,
@@ -44,7 +43,7 @@ abstract class BotCommand(
 
     protected fun replyToMessageWithPhoto(url: String, caption: String): Message =
         ctx.replyToMessageWithPhoto()
-            .setFile(url, URI.create(url).toURL().openStream())
+            .setFile(url)
             .setCaption(caption)
             .setParseMode(ParseMode.HTML)
             .call(ctx.sender)

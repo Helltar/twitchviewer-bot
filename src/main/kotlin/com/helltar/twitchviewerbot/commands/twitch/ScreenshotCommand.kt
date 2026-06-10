@@ -8,7 +8,6 @@ import com.helltar.twitchviewerbot.twitch.StreamInfo
 import com.helltar.twitchviewerbot.utils.runCatchingPreservingCancellation
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto
-import java.net.URI
 
 class ScreenshotCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botContext) {
 
@@ -57,14 +56,10 @@ class ScreenshotCommand(botContext: BotContext<MessageContext>) : TwitchCommand(
         }
     }
 
-    private fun buildMediaPhoto(stream: StreamInfo): InputMediaPhoto {
-        val caption = createHtmlCaption(stream)
-        val inputStream = URI.create(stream.thumbnailUrl).toURL().openStream()
-
-        return InputMediaPhoto.builder()
-            .media(inputStream, stream.thumbnailUrl)
-            .caption(caption)
+    private fun buildMediaPhoto(stream: StreamInfo): InputMediaPhoto =
+        InputMediaPhoto.builder()
+            .media(stream.thumbnailUrl)
+            .caption(createHtmlCaption(stream))
             .parseMode(ParseMode.HTML)
             .build()
-    }
 }
