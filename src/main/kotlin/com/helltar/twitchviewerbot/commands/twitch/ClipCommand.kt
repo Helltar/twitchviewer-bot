@@ -6,6 +6,7 @@ import com.helltar.twitchviewerbot.bot.BotContext
 import com.helltar.twitchviewerbot.commands.TwitchCommand
 import com.helltar.twitchviewerbot.database.dao.usersDao
 import com.helltar.twitchviewerbot.twitch.StreamInfo
+import com.helltar.twitchviewerbot.utils.ProcessUtils.ffmpegExtractAudio
 import com.helltar.twitchviewerbot.utils.ProcessUtils.ffmpegPrepareClip
 import com.helltar.twitchviewerbot.utils.ProcessUtils.kill
 import com.helltar.twitchviewerbot.utils.ProcessUtils.startStreamlinkProcess
@@ -21,7 +22,10 @@ import java.time.format.DateTimeFormatter
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
 
-class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botContext) {
+class ClipCommand(
+    botContext: BotContext<MessageContext>,
+    private val format: ClipFormat = ClipFormat.VIDEO
+) : TwitchCommand(botContext) {
 
     private companion object {
         const val MAX_CONCURRENT_CLIPS = 3
@@ -133,24 +137,24 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
     private suspend fun downloadAndSendClip(stream: StreamInfo) {
         val channelLogin = stream.login
         val tempName = channelLogin.plusUUID()
-        val streamlinkFile = generateOutputFilename("streamlink", tempName)
-        val ffmpegFile = generateOutputFilename("ffmpeg", tempName)
+        val streamlinkFile = generateOutputFilename("streamlink", tempName, "ts")
+        val outFile = generateOutputFilename("out", tempName, format.fileExtension)
 
         try {
-            log.info { "recording ${clipDurationSec}s clip of $channelLogin for user-$userId" }
+            log.info { "recording ${clipDurationSec}s ${format.name.lowercase()} clip of $channelLogin for user-$userId" }
 
-            startStreamlinkProcess(channelLogin, streamlinkFile, clipDurationSec)
+            startStreamlinkProcess(channelLogin, streamlinkFile, clipDurationSec, format.streamlinkQuality)
                 .waitForExit(clipDurationSec + STREAMLINK_TIMEOUT_HEADROOM_SEC)
 
             currentCoroutineContext().ensureActive()
 
-            ffmpegPrepareClip(streamlinkFile, ffmpegFile, clipDurationSec)
+            prepareMedia(streamlinkFile, outFile)
                 .waitForExit(clipDurationSec)
 
             currentCoroutineContext().ensureActive()
 
-            if (File(ffmpegFile).exists())
-                replyToMessageWithVideo(ffmpegFile, clipDisplayName(channelLogin), createHtmlCaption(stream))
+            if (File(outFile).exists())
+                sendMedia(outFile, stream)
             else
                 replyToMessage(localizedString(Strings.GET_CLIP_FAIL))
         } catch (e: CancellationException) {
@@ -158,8 +162,24 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
         } catch (e: Exception) {
             log.warn { "error processing clip for $channelLogin: ${e.message}" }
         } finally {
-            File(ffmpegFile).delete()
+            File(outFile).delete()
             File(streamlinkFile).delete()
+        }
+    }
+
+    private fun prepareMedia(inputFile: String, outFile: String): Process =
+        when (format) {
+            ClipFormat.VIDEO -> ffmpegPrepareClip(inputFile, outFile, clipDurationSec)
+            ClipFormat.AUDIO -> ffmpegExtractAudio(inputFile, outFile, clipDurationSec)
+        }
+
+    private fun sendMedia(file: String, stream: StreamInfo) {
+        val displayName = clipDisplayName(stream.login)
+
+        when (format) {
+            ClipFormat.VIDEO -> replyToMessageWithVideo(file, displayName, createHtmlCaption(stream))
+            ClipFormat.AUDIO ->
+                replyToMessageWithAudio(file, displayName, stream.login, createHtmlCaption(stream), clipDurationSec.toInt())
         }
     }
 
@@ -181,9 +201,9 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
         }
     }
 
-    private fun generateOutputFilename(prefix: String, tempName: String) =
-        TempStorage.clipsDir.resolve("${prefix}_$tempName.mp4").toString()
+    private fun generateOutputFilename(prefix: String, tempName: String, extension: String) =
+        TempStorage.clipsDir.resolve("${prefix}_$tempName.$extension").toString()
 
     private fun clipDisplayName(channelLogin: String): String =
-        "${channelLogin}_${LocalDateTime.now().format(CLIP_NAME_TIMESTAMP)}.mp4"
+        "${channelLogin}_${LocalDateTime.now().format(CLIP_NAME_TIMESTAMP)}.${format.fileExtension}"
 }

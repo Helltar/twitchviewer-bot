@@ -10,6 +10,7 @@ import com.helltar.twitchviewerbot.Strings
 import com.helltar.twitchviewerbot.Strings.localizedString
 import com.helltar.twitchviewerbot.bot.*
 import com.helltar.twitchviewerbot.commands.twitch.ClipCommand
+import com.helltar.twitchviewerbot.commands.twitch.ClipFormat
 import com.helltar.twitchviewerbot.commands.twitch.ScreenshotCommand
 import com.helltar.twitchviewerbot.database.dao.userChannelsDao
 import com.helltar.twitchviewerbot.database.dao.usersDao
@@ -92,6 +93,9 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
 
             MenuAction.CLIP_ONE -> callback.channel?.let { clipCommand(ctx, ownerId, languageCode).clip(it) }
 
+            MenuAction.CLIP_AUDIO_ONE ->
+                callback.channel?.let { clipCommand(ctx, ownerId, languageCode, ClipFormat.AUDIO).clip(it) }
+
             MenuAction.CLIP_ALL -> withChannels(ownerId) {
                 clipCommand(
                     ctx,
@@ -162,8 +166,13 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
         if (channels.isNotEmpty()) action(channels)
     }
 
-    private fun clipCommand(ctx: CallbackQueryContext, ownerId: Long, languageCode: String?): ClipCommand =
-        ClipCommand(commandContext(ctx, ownerId, languageCode))
+    private fun clipCommand(
+        ctx: CallbackQueryContext,
+        ownerId: Long,
+        languageCode: String?,
+        format: ClipFormat = ClipFormat.VIDEO
+    ): ClipCommand =
+        ClipCommand(commandContext(ctx, ownerId, languageCode), format)
 
     private fun screenshotCommand(ctx: CallbackQueryContext, ownerId: Long, languageCode: String?): ScreenshotCommand =
         ScreenshotCommand(commandContext(ctx, ownerId, languageCode))
@@ -187,8 +196,11 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
 
     private fun requestKey(callback: MenuCallback): String =
         when (callback.action) {
-            MenuAction.CLIP_ONE, MenuAction.CLIP_ALL -> RequestKey.forUser(RequestKey.CLIP, callback.ownerId)
+            MenuAction.CLIP_ONE, MenuAction.CLIP_AUDIO_ONE, MenuAction.CLIP_ALL ->
+                RequestKey.forUser(RequestKey.CLIP, callback.ownerId)
+
             MenuAction.SCREENSHOT_ALL -> RequestKey.forUser(RequestKey.SCREENSHOT, callback.ownerId)
+
             else -> RequestKey.forUser(RequestKey.MENU, callback.ownerId)
         }
 }

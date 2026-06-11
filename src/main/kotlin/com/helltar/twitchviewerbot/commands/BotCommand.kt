@@ -57,6 +57,22 @@ abstract class BotCommand(
             .setSupportsStreaming(true) // hint Telegram to show an inline player; dimensions/duration are read from the file
             .call(ctx.sender)
 
+    protected fun replyToMessageWithAudio(
+        filename: String,
+        displayName: String,
+        performer: String,
+        caption: String,
+        durationSec: Int
+    ): Message =
+        ctx.replyToMessageWithAudio()
+            .setFile(InputFile(File(filename), displayName))
+            .setTitle(displayName.substringBeforeLast('.'))
+            .setPerformer(performer)
+            .setDuration(durationSec)
+            .setCaption(caption)
+            .setParseMode(ParseMode.HTML)
+            .call(ctx.sender)
+
     protected fun deleteMessageAsync(messageId: Int) {
         ctx.deleteMessage()
             .setMessageId(messageId)

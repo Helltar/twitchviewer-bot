@@ -33,6 +33,7 @@ object Strings {
     const val BTN_DELETE = "btn_delete"
     const val BTN_RECORD_ALL = "btn_record_all"
     const val BTN_SHORT_CLIP = "btn_short_clip"
+    const val BTN_AUDIO_CLIP = "btn_audio_clip"
     const val BTN_CAPTURE_ALL = "btn_capture_all"
     const val BTN_SETTINGS = "btn_settings"
     const val TITLE_CHANNEL_IS_SELECTED = "title_channel_is_selected"

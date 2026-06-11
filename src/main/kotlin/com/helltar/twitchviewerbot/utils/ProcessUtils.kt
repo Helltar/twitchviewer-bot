@@ -25,13 +25,26 @@ object ProcessUtils {
         return command.startProcessOrThrow("failed to start ffmpeg")
     }
 
-    fun startStreamlinkProcess(channelName: String, outFilename: String, durationSec: Long): Process {
+    fun ffmpegExtractAudio(inputFilename: String, outFilename: String, lengthTime: Long): Process {
+        val command =
+            listOf(
+                "ffmpeg", "-i", inputFilename,
+                "-t", "$lengthTime",
+                "-vn", "-c:a", "copy",
+                "-movflags", "+faststart",
+                "-loglevel", "quiet", outFilename
+            )
+
+        return command.startProcessOrThrow("failed to start ffmpeg")
+    }
+
+    fun startStreamlinkProcess(channelName: String, outFilename: String, durationSec: Long, quality: String): Process {
         val command =
             listOf(
                 "streamlink",
                 "--stream-segmented-duration", "${durationSec}s", // streamlink stops on its own after this much media
                 "https://www.twitch.tv/$channelName",
-                "720p,720p60,best",
+                quality,
                 "-o", outFilename
             )
 

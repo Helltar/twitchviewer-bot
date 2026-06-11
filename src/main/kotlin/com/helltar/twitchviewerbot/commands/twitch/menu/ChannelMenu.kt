@@ -132,6 +132,13 @@ class ChannelMenu(
                         channel,
                         page = page,
                         style = STYLE_PRIMARY
+                    ),
+                    button(
+                        label(Strings.BTN_AUDIO_CLIP),
+                        MenuAction.CLIP_AUDIO_ONE,
+                        channel,
+                        page = page,
+                        style = STYLE_PRIMARY
                     )
                 )
             )
