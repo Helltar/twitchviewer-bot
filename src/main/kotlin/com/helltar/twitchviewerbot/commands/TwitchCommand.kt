@@ -1,7 +1,7 @@
 package com.helltar.twitchviewerbot.commands
 
 import com.annimon.tgbotsmodule.commands.context.MessageContext
-import com.helltar.twitchviewerbot.LocalizationKeys
+import com.helltar.twitchviewerbot.Localization
 import com.helltar.twitchviewerbot.bot.BotContext
 import com.helltar.twitchviewerbot.bot.BotDependencies
 import com.helltar.twitchviewerbot.database.dao.userChannelsDao
@@ -20,12 +20,12 @@ abstract class TwitchCommand(botContext: BotContext<MessageContext>) :
 
     protected fun checkChannelNameAndReplyIfInvalid(name: String): Boolean {
         if (name.length !in 2..25) {
-            replyToMessage(localizedString(LocalizationKeys.INVALID_CHANNEL_NAME_LENGTH))
+            replyToMessage(localizedString(Localization.INVALID_CHANNEL_NAME_LENGTH))
             return false
         }
 
         if (!name.matches("^[a-zA-Z0-9_]*$".toRegex())) {
-            replyToMessage(localizedString(LocalizationKeys.INVALID_CHANNEL_NAME))
+            replyToMessage(localizedString(Localization.INVALID_CHANNEL_NAME))
             return false
         }
 
@@ -38,8 +38,8 @@ abstract class TwitchCommand(botContext: BotContext<MessageContext>) :
 
         val title = "${stream.login.toTwitchHtmlLink(username)} - ${stream.title}\n\n"
         val categoryTag = if (category.isNotEmpty()) ", #${category.toHashTag()}" else ""
-        val uptime = localizedString(LocalizationKeys.STREAM_UPTIME).format(stream.uptime) + "\n\n"
-        val viewersCount = localizedString(LocalizationKeys.STREAM_VIEWERS).format(stream.viewerCount) + "\n"
+        val uptime = localizedString(Localization.STREAM_UPTIME).format(stream.uptime) + "\n\n"
+        val viewersCount = localizedString(Localization.STREAM_VIEWERS).format(stream.viewerCount) + "\n"
 
         return "$title$viewersCount$uptime#$username$categoryTag"
     }

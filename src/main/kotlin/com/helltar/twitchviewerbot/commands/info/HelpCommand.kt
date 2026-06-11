@@ -1,12 +1,12 @@
-package com.helltar.twitchviewerbot.commands.simple
+package com.helltar.twitchviewerbot.commands.info
 
 import com.annimon.tgbotsmodule.commands.context.MessageContext
-import com.helltar.twitchviewerbot.LocalizationKeys
+import com.helltar.twitchviewerbot.Localization
 import com.helltar.twitchviewerbot.commands.BotCommand
 
 class HelpCommand(ctx: MessageContext) : BotCommand(ctx) {
 
     override suspend fun run() {
-        replyToMessage(localizedString(LocalizationKeys.START_COMMAND_INFO))
+        replyToMessage(localizedString(Localization.START_COMMAND_INFO))
     }
 }

@@ -2,7 +2,7 @@ package com.helltar.twitchviewerbot
 
 import com.annimon.tgbotsmodule.services.ResourceBundleLocalizationService
 
-object LocalizationKeys {
+object Localization {
 
     const val ADD_COMMAND_INFO = "add_command_info"
     const val CHANNEL_ADDED_TO_LIST = "channel_added_to_list"

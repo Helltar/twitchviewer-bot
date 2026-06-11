@@ -8,9 +8,9 @@ import com.annimon.tgbotsmodule.commands.authority.SimpleAuthority
 import com.annimon.tgbotsmodule.commands.context.MessageContext
 import com.helltar.twitchviewerbot.bot.CommandExecutor.cancelJobs
 import com.helltar.twitchviewerbot.bot.CommandExecutor.executeCommand
-import com.helltar.twitchviewerbot.commands.simple.AboutCommand
-import com.helltar.twitchviewerbot.commands.simple.HelpCommand
-import com.helltar.twitchviewerbot.commands.simple.StartCommand
+import com.helltar.twitchviewerbot.commands.info.AboutCommand
+import com.helltar.twitchviewerbot.commands.info.HelpCommand
+import com.helltar.twitchviewerbot.commands.info.StartCommand
 import com.helltar.twitchviewerbot.commands.twitch.AddCommand
 import com.helltar.twitchviewerbot.commands.twitch.ClipCommand
 import com.helltar.twitchviewerbot.commands.twitch.ListCommand

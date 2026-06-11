@@ -6,11 +6,11 @@ import com.annimon.tgbotsmodule.commands.SimpleCallbackQueryCommand
 import com.annimon.tgbotsmodule.commands.authority.For
 import com.annimon.tgbotsmodule.commands.context.CallbackQueryContext
 import com.annimon.tgbotsmodule.commands.context.MessageContext
-import com.helltar.twitchviewerbot.LocalizationKeys
-import com.helltar.twitchviewerbot.LocalizationKeys.localizedString
+import com.helltar.twitchviewerbot.Localization
+import com.helltar.twitchviewerbot.Localization.localizedString
 import com.helltar.twitchviewerbot.bot.*
 import com.helltar.twitchviewerbot.commands.twitch.ClipCommand
-import com.helltar.twitchviewerbot.commands.twitch.ClipFormat
+import com.helltar.twitchviewerbot.media.ClipFormat
 import com.helltar.twitchviewerbot.commands.twitch.ScreenshotCommand
 import com.helltar.twitchviewerbot.database.dao.userChannelsDao
 import com.helltar.twitchviewerbot.database.dao.usersDao
@@ -41,20 +41,20 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
         log.debug { "menu callback: ${ctx.data()}" }
 
         if (user.id != callback.ownerId) {
-            ctx.answer(localizedString(LocalizationKeys.DONT_TOUCH_IS_NOT_YOUR_LIST, user.languageCode).format(user.firstName))
+            ctx.answer(localizedString(Localization.DONT_TOUCH_IS_NOT_YOUR_LIST, user.languageCode).format(user.firstName))
                 .callAsync(ctx.sender)
 
             return
         }
 
-        val started = CommandExecutor.launch(requestKey(callback)) { dispatch(ctx, callback) }
+        val started = CommandExecutor.tryLaunch(requestKey(callback)) { dispatch(ctx, callback) }
 
         // acknowledge immediately so the client stops showing the button spinner;
         // long-running actions (clip/screenshot) keep working in the launched job
         if (started)
             ctx.answer("").callAsync(ctx.sender)
         else
-            ctx.answer(localizedString(LocalizationKeys.MANY_REQUEST, user.languageCode)).callAsync(ctx.sender)
+            ctx.answer(localizedString(Localization.MANY_REQUEST, user.languageCode)).callAsync(ctx.sender)
     }
 
     private suspend fun dispatch(ctx: CallbackQueryContext, callback: MenuCallback) {
@@ -74,7 +74,7 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
             MenuAction.CLOSE ->
                 editMessage(
                     ctx,
-                    localizedString(LocalizationKeys.USER_CLOSE_LIST, languageCode).format(
+                    localizedString(Localization.USER_CLOSE_LIST, languageCode).format(
                         ctx.user().firstName,
                         dependencies.settings.username
                     )
@@ -123,7 +123,7 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
         val channel = callback.channel ?: return
 
         val title =
-            localizedString(LocalizationKeys.TITLE_CHANNEL_IS_SELECTED, languageCode).format(channel.toTwitchHtmlLink(channel))
+            localizedString(Localization.TITLE_CHANNEL_IS_SELECTED, languageCode).format(channel.toTwitchHtmlLink(channel))
 
         editMessage(ctx, title, menu.channelMarkup(channel, callback.live, callback.page))
     }
@@ -135,12 +135,12 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
         page: Int,
         languageCode: String?
     ) {
-        if (userChannelsDao.isListEmpty(ownerId))
-            editMessage(ctx, localizedString(LocalizationKeys.LIST_IS_EMPTY, languageCode))
+        if (!userChannelsDao.hasChannels(ownerId))
+            editMessage(ctx, localizedString(Localization.LIST_IS_EMPTY, languageCode))
         else
             editMessage(
                 ctx,
-                localizedString(LocalizationKeys.TITLE_CHOOSE_CHANNEL_OR_ACTION, languageCode),
+                localizedString(Localization.TITLE_CHOOSE_CHANNEL_OR_ACTION, languageCode),
                 menu.mainMarkup(page)
             )
     }
@@ -156,7 +156,7 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
 
         editMessage(
             ctx,
-            localizedString(LocalizationKeys.TITLE_SETTINGS, languageCode).format(duration),
+            localizedString(Localization.TITLE_SETTINGS, languageCode).format(duration),
             menu.settingsMarkup(duration, page)
         )
     }

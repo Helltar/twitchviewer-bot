@@ -37,16 +37,13 @@ class UserChannelsDao {
             .toList()
     }
 
-    suspend fun isListNotEmpty(userId: Long): Boolean = dbTransaction {
+    suspend fun hasChannels(userId: Long): Boolean = dbTransaction {
         UserChannelsTable
             .select(UserChannelsTable.userId)
             .where { UserChannelsTable.userId eq userId }
             .empty()
             .not()
     }
-
-    suspend fun isListEmpty(userId: Long): Boolean =
-        !isListNotEmpty(userId)
 }
 
 val userChannelsDao = UserChannelsDao()

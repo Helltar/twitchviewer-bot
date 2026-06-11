@@ -1,11 +1,12 @@
 package com.helltar.twitchviewerbot.commands.twitch
 
 import com.annimon.tgbotsmodule.commands.context.MessageContext
-import com.helltar.twitchviewerbot.LocalizationKeys
+import com.helltar.twitchviewerbot.Localization
 import com.helltar.twitchviewerbot.bot.BotContext
 import com.helltar.twitchviewerbot.commands.TwitchCommand
 import com.helltar.twitchviewerbot.coroutines.runCatchingPreservingCancellation
 import com.helltar.twitchviewerbot.database.dao.usersDao
+import com.helltar.twitchviewerbot.media.ClipFormat
 import com.helltar.twitchviewerbot.media.ClipProcesses.ffmpegExtractAudio
 import com.helltar.twitchviewerbot.media.ClipProcesses.ffmpegPrepareClip
 import com.helltar.twitchviewerbot.media.ClipProcesses.kill
@@ -58,7 +59,7 @@ class ClipCommand(
             if (channels.isNotEmpty())
                 fetchAndSendClips(channels)
             else
-                replyToMessage(localizedString(LocalizationKeys.CLIP_COMMAND_INFO))
+                replyToMessage(localizedString(Localization.CLIP_COMMAND_INFO))
 
             return
         }
@@ -85,7 +86,7 @@ class ClipCommand(
             if (filtered.isNotEmpty())
                 fetchAndSendClips(filtered)
             else
-                replyToMessage(localizedString(LocalizationKeys.FILTER_NO_CHANNELS_FOUND).format(input))
+                replyToMessage(localizedString(Localization.FILTER_NO_CHANNELS_FOUND).format(input))
 
             return
         }
@@ -100,14 +101,14 @@ class ClipCommand(
         val activeStreams =
             runCatchingPreservingCancellation { twitchService.fetchActiveStreams(userLogins) }
                 .getOrElse {
-                    replyToMessage(localizedString(LocalizationKeys.TWITCH_EXCEPTION))
+                    replyToMessage(localizedString(Localization.TWITCH_EXCEPTION))
                     return
                 }
 
         if (activeStreams.isNotEmpty())
             retrieveAndSendClips(activeStreams)
         else
-            replyToMessage(localizedString(LocalizationKeys.EMPTY_ONLINE_LIST))
+            replyToMessage(localizedString(Localization.EMPTY_ONLINE_LIST))
     }
 
     suspend fun clip(channel: String) =
@@ -165,7 +166,7 @@ class ClipCommand(
             val clipFile = File(outFile)
 
             if (!clipFile.exists()) {
-                replyToMessage(localizedString(LocalizationKeys.GET_CLIP_FAIL))
+                replyToMessage(localizedString(Localization.GET_CLIP_FAIL))
                 return
             }
 
@@ -179,7 +180,7 @@ class ClipCommand(
 
             if (!clipFile.exists() || clipFile.length() > MAX_UPLOAD_SIZE_BYTES) {
                 log.warn { "clip of $channelLogin for user-$userId exceeds the upload limit even after trimming" }
-                replyToMessage(localizedString(LocalizationKeys.CLIP_TOO_LARGE))
+                replyToMessage(localizedString(Localization.CLIP_TOO_LARGE))
                 return
             }
 
@@ -223,8 +224,8 @@ class ClipCommand(
 
     private fun startMessageKey(): String =
         when (format) {
-            ClipFormat.VIDEO -> LocalizationKeys.START_GET_CLIP
-            ClipFormat.AUDIO -> LocalizationKeys.START_GET_AUDIO_CLIP
+            ClipFormat.VIDEO -> Localization.START_GET_CLIP
+            ClipFormat.AUDIO -> Localization.START_GET_AUDIO_CLIP
         }
 
     private fun sendMedia(file: String, stream: StreamInfo, videoInfo: VideoInfo?, trimmedDurationSec: Long? = null) {
@@ -233,7 +234,7 @@ class ClipCommand(
         var caption = createHtmlCaption(stream)
 
         if (trimmedDurationSec != null)
-            caption += "\n\n" + localizedString(LocalizationKeys.CLIP_TRIMMED).format(trimmedDurationSec)
+            caption += "\n\n" + localizedString(Localization.CLIP_TRIMMED).format(trimmedDurationSec)
 
         when (format) {
             ClipFormat.VIDEO -> replyToMessageWithVideo(file, displayName, caption, videoInfo)

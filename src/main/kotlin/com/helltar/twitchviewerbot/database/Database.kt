@@ -10,7 +10,6 @@ import org.jetbrains.exposed.v1.r2dbc.R2dbcDatabase
 import org.jetbrains.exposed.v1.r2dbc.R2dbcTransaction
 import org.jetbrains.exposed.v1.r2dbc.SchemaUtils
 import org.jetbrains.exposed.v1.r2dbc.transactions.suspendTransaction
-import java.time.Instant
 
 object Database {
 
@@ -24,9 +23,6 @@ object Database {
             }
         }
     }
-
-    fun now(): Instant =
-        Instant.now()
 
     suspend fun <T> dbTransaction(block: suspend R2dbcTransaction.() -> T): T =
         withContext(Dispatchers.IO) {

@@ -1,7 +1,6 @@
 package com.helltar.twitchviewerbot.database.dao
 
 import com.helltar.twitchviewerbot.database.Database.dbTransaction
-import com.helltar.twitchviewerbot.database.Database.now
 import com.helltar.twitchviewerbot.database.tables.UsersTable
 import com.helltar.twitchviewerbot.database.tables.UsersTable.clipDuration
 import com.helltar.twitchviewerbot.database.tables.UsersTable.firstName
@@ -14,6 +13,7 @@ import org.jetbrains.exposed.v1.r2dbc.select
 import org.jetbrains.exposed.v1.r2dbc.update
 import org.jetbrains.exposed.v1.r2dbc.upsert
 import org.telegram.telegrambots.meta.api.objects.User
+import java.time.Instant
 
 class UsersDao {
 
@@ -24,7 +24,7 @@ class UsersDao {
                     it[firstName] = user.firstName
                     it[username] = user.userName
                     it[languageCode] = user.languageCode
-                    it[updatedAt] = now()
+                    it[updatedAt] = Instant.now()
                 })
             {
                 it[userId] = user.id
@@ -51,7 +51,7 @@ class UsersDao {
     suspend fun setClipDuration(userId: Long, duration: Int) = dbTransaction {
         UsersTable.update({ UsersTable.userId eq userId }) {
             it[clipDuration] = duration
-            it[updatedAt] = now()
+            it[updatedAt] = Instant.now()
         }
     }
 }

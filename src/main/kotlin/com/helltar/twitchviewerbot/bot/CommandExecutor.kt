@@ -1,7 +1,7 @@
 package com.helltar.twitchviewerbot.bot
 
 import com.annimon.tgbotsmodule.commands.context.MessageContext
-import com.helltar.twitchviewerbot.LocalizationKeys
+import com.helltar.twitchviewerbot.Localization
 import com.helltar.twitchviewerbot.commands.BotCommand
 import com.helltar.twitchviewerbot.database.dao.usersDao
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -30,17 +30,17 @@ object CommandExecutor {
 
         log.info { "$commandName: ${chat.id} $userId ${user.userName} ${user.firstName} ${chat.title}: ${botCommand.ctx.message().text}" }
 
-        val launch =
-            launch(RequestKey.forUser(requestKey ?: commandName, userId)) {
+        val started =
+            tryLaunch(RequestKey.forUser(requestKey ?: commandName, userId)) {
                 usersDao.upsert(user)
                 botCommand.run()
             }
 
-        if (!launch)
-            botCommand.replyToMessageAsync(LocalizationKeys.localizedString(LocalizationKeys.MANY_REQUEST, user.languageCode))
+        if (!started)
+            botCommand.replyToMessageAsync(Localization.localizedString(Localization.MANY_REQUEST, user.languageCode))
     }
 
-    fun launch(key: String, task: suspend () -> Unit): Boolean {
+    fun tryLaunch(key: String, task: suspend () -> Unit): Boolean {
         var started = false
 
         // atomic check-and-insert: only one active job per key at a time
@@ -79,7 +79,7 @@ object CommandExecutor {
         val activeJobs = requestsMap.filter { it.key.endsWith("@$userId") && it.value.isActive }
 
         if (activeJobs.isEmpty()) {
-            replyToMessage(LocalizationKeys.localizedString(LocalizationKeys.NO_ACTIVE_TASKS, languageCode))
+            replyToMessage(Localization.localizedString(Localization.NO_ACTIVE_TASKS, languageCode))
             return
         }
 
@@ -88,6 +88,6 @@ object CommandExecutor {
             job.cancel()
         }
 
-        replyToMessage(LocalizationKeys.localizedString(LocalizationKeys.TASKS_ARE_CANCELLED, languageCode))
+        replyToMessage(Localization.localizedString(Localization.TASKS_ARE_CANCELLED, languageCode))
     }
 }

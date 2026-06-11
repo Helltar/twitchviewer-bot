@@ -1,7 +1,7 @@
 package com.helltar.twitchviewerbot.commands
 
 import com.annimon.tgbotsmodule.commands.context.MessageContext
-import com.helltar.twitchviewerbot.LocalizationKeys
+import com.helltar.twitchviewerbot.Localization
 import com.helltar.twitchviewerbot.media.VideoInfo
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.InputFile
@@ -91,5 +91,5 @@ abstract class BotCommand(
     }
 
     protected fun localizedString(key: String) =
-        LocalizationKeys.localizedString(key, languageCode)
+        Localization.localizedString(key, languageCode)
 }

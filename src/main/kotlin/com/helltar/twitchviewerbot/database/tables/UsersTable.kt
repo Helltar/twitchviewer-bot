@@ -1,8 +1,8 @@
 package com.helltar.twitchviewerbot.database.tables
 
-import com.helltar.twitchviewerbot.database.Database.now
 import org.jetbrains.exposed.v1.core.Table
 import org.jetbrains.exposed.v1.javatime.timestamp
+import java.time.Instant
 
 object UsersTable : Table() {
 
@@ -12,7 +12,7 @@ object UsersTable : Table() {
     val languageCode = varchar("language_code", 20).nullable()
     val clipDuration = integer("clip_duration").default(30)
     val updatedAt = timestamp("updated_at").nullable()
-    val createdAt = timestamp("created_at").clientDefault { now() }
+    val createdAt = timestamp("created_at").clientDefault { Instant.now() }
 
     override val primaryKey = PrimaryKey(userId)
 }

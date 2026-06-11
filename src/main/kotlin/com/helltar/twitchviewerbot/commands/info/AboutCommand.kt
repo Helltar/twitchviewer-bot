@@ -1,4 +1,4 @@
-package com.helltar.twitchviewerbot.commands.simple
+package com.helltar.twitchviewerbot.commands.info
 
 import com.annimon.tgbotsmodule.commands.context.MessageContext
 import com.helltar.twitchviewerbot.commands.BotCommand
