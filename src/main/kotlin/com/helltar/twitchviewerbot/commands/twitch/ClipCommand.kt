@@ -113,7 +113,7 @@ class ClipCommand(
 
     private suspend fun processClipBatch(chunk: List<StreamInfo>) = coroutineScope {
         val channelLinks = chunk.joinToString { it.login.toTwitchHtmlLink(it.username) }
-        val statusMessageId = replyToMessage(localizedString(Strings.START_GET_CLIP).format(channelLinks, clipDurationSec))
+        val statusMessageId = replyToMessage(localizedString(startMessageKey()).format(channelLinks, clipDurationSec))
 
         val jobs =
             chunk.map { stream ->
@@ -171,6 +171,12 @@ class ClipCommand(
         when (format) {
             ClipFormat.VIDEO -> ffmpegPrepareClip(inputFile, outFile, clipDurationSec)
             ClipFormat.AUDIO -> ffmpegExtractAudio(inputFile, outFile, clipDurationSec)
+        }
+
+    private fun startMessageKey(): String =
+        when (format) {
+            ClipFormat.VIDEO -> Strings.START_GET_CLIP
+            ClipFormat.AUDIO -> Strings.START_GET_AUDIO_CLIP
         }
 
     private fun sendMedia(file: String, stream: StreamInfo) {

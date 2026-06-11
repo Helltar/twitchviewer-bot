@@ -21,6 +21,7 @@ object Strings {
     const val NO_ACTIVE_TASKS = "no_active_tasks"
     const val START_COMMAND_INFO = "start_command_info"
     const val START_GET_CLIP = "start_get_clip"
+    const val START_GET_AUDIO_CLIP = "start_get_audio_clip"
     const val STREAM_UPTIME = "stream_uptime"
     const val STREAM_VIEWERS = "stream_viewers"
     const val TASKS_ARE_CANCELLED = "tasks_are_cancelled"
