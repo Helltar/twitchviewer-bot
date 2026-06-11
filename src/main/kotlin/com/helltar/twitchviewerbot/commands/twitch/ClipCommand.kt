@@ -109,7 +109,7 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
 
     private suspend fun processClipBatch(chunk: List<StreamInfo>) = coroutineScope {
         val channelLinks = chunk.joinToString { it.login.toTwitchHtmlLink(it.username) }
-        val statusMessageId = replyToMessage(localizedString(Strings.START_GET_CLIP).format(channelLinks))
+        val statusMessageId = replyToMessage(localizedString(Strings.START_GET_CLIP).format(channelLinks, clipDurationSec))
 
         val jobs =
             chunk.map { stream ->
