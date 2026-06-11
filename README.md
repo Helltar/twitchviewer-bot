@@ -38,11 +38,20 @@ docker compose up -d
 
 ## Commands
 
-- `/clip` - Record clips from all tracked channels
-  - `/clip <channel>` - record a clip from a specific channel (even if it isn't in your list)
-  - `/clip <prefix>.` - record clips only from tracked channels whose name starts with `<prefix>`, e.g. `/clip em.`
-  - `/clip !<prefix>.` - record clips from all tracked channels **except** those starting with `<prefix>`, e.g. `/clip !em.`
-- `/screenshot` - Capture screenshots from all tracked channels or a specific channel (`/screenshot <channel>`)
+**`/clip`** - record clips
+
+- `/clip` - from all tracked channels
+- `/clip <channel>` - from a specific channel (even if it isn't in your list)
+- `/clip <prefix>.` - only from tracked channels whose name starts with `<prefix>`, e.g. `/clip em.`
+- `/clip !<prefix>.` - from all tracked channels **except** those starting with `<prefix>`, e.g. `/clip !em.`
+
+**`/screenshot`** - capture screenshots
+
+- `/screenshot` - from all tracked channels
+- `/screenshot <channel>` - from a specific channel
+
+**Other**
+
 - `/add` - Add channel to favorites
 - `/list` - Show your favorite channels
 - `/cancel` - Cancel your active background tasks
