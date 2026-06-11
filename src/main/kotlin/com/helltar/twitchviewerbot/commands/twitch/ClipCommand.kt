@@ -184,7 +184,7 @@ class ClipCommand(
                 return
             }
 
-            val videoInfo = prepareVideoInfo(outFile)
+            val videoInfo = if (format == ClipFormat.VIDEO) prepareVideoInfo(outFile) else null
             sendMedia(outFile, stream, videoInfo, trimmedDurationSec)
         } catch (e: CancellationException) {
             throw e
