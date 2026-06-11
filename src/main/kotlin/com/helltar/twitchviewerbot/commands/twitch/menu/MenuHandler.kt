@@ -14,7 +14,7 @@ import com.helltar.twitchviewerbot.commands.twitch.ClipFormat
 import com.helltar.twitchviewerbot.commands.twitch.ScreenshotCommand
 import com.helltar.twitchviewerbot.database.dao.userChannelsDao
 import com.helltar.twitchviewerbot.database.dao.usersDao
-import com.helltar.twitchviewerbot.utils.StringUtils.toTwitchHtmlLink
+import com.helltar.twitchviewerbot.text.toTwitchHtmlLink
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.Update

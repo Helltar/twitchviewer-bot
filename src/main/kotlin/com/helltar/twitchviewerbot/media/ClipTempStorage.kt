@@ -1,10 +1,10 @@
-package com.helltar.twitchviewerbot.utils
+package com.helltar.twitchviewerbot.media
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.nio.file.Files
 import java.nio.file.Path
 
-object TempStorage {
+object ClipTempStorage {
 
     private val log = KotlinLogging.logger {}
 

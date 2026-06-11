@@ -6,14 +6,14 @@ import com.helltar.twitchviewerbot.bot.BotContext
 import com.helltar.twitchviewerbot.commands.TwitchCommand
 import com.helltar.twitchviewerbot.database.dao.usersDao
 import com.helltar.twitchviewerbot.twitch.StreamInfo
-import com.helltar.twitchviewerbot.utils.ProcessUtils.ffmpegExtractAudio
-import com.helltar.twitchviewerbot.utils.ProcessUtils.ffmpegPrepareClip
-import com.helltar.twitchviewerbot.utils.ProcessUtils.kill
-import com.helltar.twitchviewerbot.utils.ProcessUtils.startStreamlinkProcess
-import com.helltar.twitchviewerbot.utils.StringUtils.plusUUID
-import com.helltar.twitchviewerbot.utils.StringUtils.toTwitchHtmlLink
-import com.helltar.twitchviewerbot.utils.TempStorage
-import com.helltar.twitchviewerbot.utils.runCatchingPreservingCancellation
+import com.helltar.twitchviewerbot.coroutines.runCatchingPreservingCancellation
+import com.helltar.twitchviewerbot.media.ClipProcesses.ffmpegExtractAudio
+import com.helltar.twitchviewerbot.media.ClipProcesses.ffmpegPrepareClip
+import com.helltar.twitchviewerbot.media.ClipProcesses.kill
+import com.helltar.twitchviewerbot.media.ClipProcesses.startStreamlinkProcess
+import com.helltar.twitchviewerbot.media.ClipTempStorage
+import com.helltar.twitchviewerbot.text.plusUUID
+import com.helltar.twitchviewerbot.text.toTwitchHtmlLink
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
 import java.io.File
@@ -208,7 +208,7 @@ class ClipCommand(
     }
 
     private fun generateOutputFilename(prefix: String, tempName: String, extension: String) =
-        TempStorage.clipsDir.resolve("${prefix}_$tempName.$extension").toString()
+        ClipTempStorage.clipsDir.resolve("${prefix}_$tempName.$extension").toString()
 
     private fun clipDisplayName(channelLogin: String): String =
         "${channelLogin}_${LocalDateTime.now().format(CLIP_NAME_TIMESTAMP)}.${format.fileExtension}"

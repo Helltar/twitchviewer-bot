@@ -1,4 +1,4 @@
-package com.helltar.twitchviewerbot.utils
+package com.helltar.twitchviewerbot.media
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.TimeUnit
@@ -6,7 +6,7 @@ import kotlin.jvm.optionals.getOrNull
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
-object ProcessUtils {
+object ClipProcesses {
 
     private val log = KotlinLogging.logger {}
 

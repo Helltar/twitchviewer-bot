@@ -3,8 +3,8 @@ package com.helltar.twitchviewerbot.commands.twitch.menu
 import com.helltar.twitchviewerbot.Strings
 import com.helltar.twitchviewerbot.Strings.localizedString
 import com.helltar.twitchviewerbot.bot.BotDependencies
+import com.helltar.twitchviewerbot.coroutines.runCatchingPreservingCancellation
 import com.helltar.twitchviewerbot.database.dao.userChannelsDao
-import com.helltar.twitchviewerbot.utils.runCatchingPreservingCancellation
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow

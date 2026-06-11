@@ -3,7 +3,7 @@ package com.helltar.twitchviewerbot.twitch
 import com.github.twitch4j.TwitchClientBuilder
 import com.github.twitch4j.helix.domain.Stream
 import com.helltar.twitchviewerbot.TwitchConfig
-import com.helltar.twitchviewerbot.utils.StringUtils.escapeHtml
+import com.helltar.twitchviewerbot.text.escapeHtml
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.time.Duration
 import java.util.*

@@ -6,8 +6,8 @@ import com.helltar.twitchviewerbot.bot.BotContext
 import com.helltar.twitchviewerbot.bot.BotDependencies
 import com.helltar.twitchviewerbot.database.dao.userChannelsDao
 import com.helltar.twitchviewerbot.twitch.StreamInfo
-import com.helltar.twitchviewerbot.utils.StringUtils.toHashTag
-import com.helltar.twitchviewerbot.utils.StringUtils.toTwitchHtmlLink
+import com.helltar.twitchviewerbot.text.toHashTag
+import com.helltar.twitchviewerbot.text.toTwitchHtmlLink
 
 abstract class TwitchCommand(botContext: BotContext<MessageContext>) :
     BotCommand(botContext.ctx, botContext.actor.id, botContext.actor.languageCode) {

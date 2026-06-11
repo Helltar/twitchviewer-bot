@@ -1,4 +1,4 @@
-package com.helltar.twitchviewerbot.utils
+package com.helltar.twitchviewerbot.coroutines
 
 import kotlinx.coroutines.CancellationException
 
