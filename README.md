@@ -13,7 +13,7 @@ Download the configuration files:
 ```bash
 mkdir twitchbot && cd twitchbot && \
 wget https://raw.githubusercontent.com/Helltar/twitchviewer-bot/master/{.env.example,compose.yaml} && \
-mv .env.example .env
+cp .env.example .env
 ```
 
 Edit `.env` and fill in your values:
