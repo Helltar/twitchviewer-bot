@@ -3,6 +3,7 @@ package com.helltar.twitchviewerbot.commands
 import com.annimon.tgbotsmodule.commands.context.MessageContext
 import com.helltar.twitchviewerbot.Strings
 import org.telegram.telegrambots.meta.api.methods.ParseMode
+import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto
 import org.telegram.telegrambots.meta.api.objects.message.Message
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup
@@ -48,9 +49,9 @@ abstract class BotCommand(
             .setParseMode(ParseMode.HTML)
             .call(ctx.sender)
 
-    protected fun replyToMessageWithVideo(filename: String, caption: String): Message =
+    protected fun replyToMessageWithVideo(filename: String, displayName: String, caption: String): Message =
         ctx.replyToMessageWithVideo()
-            .setFile(File(filename))
+            .setFile(InputFile(File(filename), displayName))
             .setCaption(caption)
             .setParseMode(ParseMode.HTML)
             .setSupportsStreaming(true) // hint Telegram to show an inline player; dimensions/duration are read from the file

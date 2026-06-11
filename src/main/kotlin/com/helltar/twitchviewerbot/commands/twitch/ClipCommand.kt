@@ -14,6 +14,8 @@ import com.helltar.twitchviewerbot.utils.runCatchingPreservingCancellation
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
 import java.io.File
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.TimeUnit
 
@@ -140,7 +142,7 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
             currentCoroutineContext().ensureActive()
 
             if (File(ffmpegFile).exists())
-                replyToMessageWithVideo(ffmpegFile, createHtmlCaption(stream))
+                replyToMessageWithVideo(ffmpegFile, clipDisplayName(channelLogin), createHtmlCaption(stream))
             else
                 replyToMessage(localizedString(Strings.GET_CLIP_FAIL))
         } catch (e: CancellationException) {
@@ -173,4 +175,9 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
 
     private fun generateOutputFilename(prefix: String, tempName: String) =
         "$TEMP_DIR/${prefix}_$tempName.mp4"
+
+    private fun clipDisplayName(channelLogin: String): String {
+        val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm"))
+        return "${channelLogin}_$timestamp.mp4"
+    }
 }
