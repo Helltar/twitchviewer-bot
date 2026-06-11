@@ -2,6 +2,7 @@ package com.helltar.twitchviewerbot.commands
 
 import com.annimon.tgbotsmodule.commands.context.MessageContext
 import com.helltar.twitchviewerbot.LocalizationKeys
+import com.helltar.twitchviewerbot.media.VideoInfo
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto
@@ -49,12 +50,22 @@ abstract class BotCommand(
             .setParseMode(ParseMode.HTML)
             .call(ctx.sender)
 
-    protected fun replyToMessageWithVideo(filename: String, displayName: String, caption: String): Message =
+    protected fun replyToMessageWithVideo(
+        filename: String,
+        displayName: String,
+        caption: String,
+        videoInfo: VideoInfo? = null
+    ): Message =
         ctx.replyToMessageWithVideo()
             .setFile(InputFile(File(filename), displayName))
             .setCaption(caption)
             .setParseMode(ParseMode.HTML)
-            .setSupportsStreaming(true) // hint Telegram to show an inline player; dimensions/duration are read from the file
+            .setSupportsStreaming(true)
+            .apply {
+                videoInfo?.width?.let { setWidth(it) }
+                videoInfo?.height?.let { setHeight(it) }
+                videoInfo?.durationSec?.let { setDuration(it) }
+            }
             .call(ctx.sender)
 
     protected fun replyToMessageWithAudio(

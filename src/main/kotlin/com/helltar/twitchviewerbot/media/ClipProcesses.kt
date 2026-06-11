@@ -3,6 +3,7 @@ package com.helltar.twitchviewerbot.media
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.util.concurrent.TimeUnit
 import kotlin.jvm.optionals.getOrNull
+import kotlin.math.roundToInt
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -49,6 +50,64 @@ object ClipProcesses {
             )
 
         return command.startProcessOrThrow("failed to start streamlink")
+    }
+
+    fun probeVideoInfo(inputFilename: String, timeout: Duration = 5.seconds): VideoInfo? {
+        val command =
+            listOf(
+                "ffprobe",
+                "-v", "error",
+                "-select_streams", "v:0",
+                "-show_entries", "stream=width,height:format=duration",
+                "-of", "default=noprint_wrappers=1",
+                inputFilename
+            )
+
+        val process =
+            try {
+                ProcessBuilder(command)
+                    .redirectError(ProcessBuilder.Redirect.DISCARD)
+                    .start()
+            } catch (e: Exception) {
+                log.warn(e) { "failed to start ffprobe for $inputFilename" }
+                return null
+            }
+
+        try {
+            if (!process.waitFor(timeout.inWholeSeconds, TimeUnit.SECONDS)) {
+                log.warn { "ffprobe didn't exit within $timeout for $inputFilename" }
+                process.kill()
+                return null
+            }
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
+            process.kill()
+            throw e
+        }
+
+        if (process.exitValue() != 0) {
+            log.warn { "ffprobe exited with code ${process.exitValue()} for $inputFilename" }
+            return null
+        }
+
+        val values =
+            process.inputStream.bufferedReader().useLines { lines ->
+                lines.mapNotNull { line ->
+                    val separatorIndex = line.indexOf('=')
+
+                    if (separatorIndex > 0)
+                        line.substring(0, separatorIndex) to line.substring(separatorIndex + 1)
+                    else
+                        null
+                }.toMap()
+            }
+
+        val width = values["width"]?.toIntOrNull()
+        val height = values["height"]?.toIntOrNull()
+        val durationSec = values["duration"]?.toDoubleOrNull()?.roundToInt()?.takeIf { it > 0 }
+
+        return VideoInfo(width, height, durationSec)
+            .takeIf { it.width != null || it.height != null || it.durationSec != null }
     }
 
     fun Process.kill(timeout: Duration = 5.seconds) {

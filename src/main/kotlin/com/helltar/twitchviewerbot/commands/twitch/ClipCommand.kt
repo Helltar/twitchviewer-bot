@@ -10,8 +10,10 @@ import com.helltar.twitchviewerbot.coroutines.runCatchingPreservingCancellation
 import com.helltar.twitchviewerbot.media.ClipProcesses.ffmpegExtractAudio
 import com.helltar.twitchviewerbot.media.ClipProcesses.ffmpegPrepareClip
 import com.helltar.twitchviewerbot.media.ClipProcesses.kill
+import com.helltar.twitchviewerbot.media.ClipProcesses.probeVideoInfo
 import com.helltar.twitchviewerbot.media.ClipProcesses.startStreamlinkProcess
 import com.helltar.twitchviewerbot.media.ClipTempStorage
+import com.helltar.twitchviewerbot.media.VideoInfo
 import com.helltar.twitchviewerbot.text.plusUUID
 import com.helltar.twitchviewerbot.text.toTwitchHtmlLink
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -153,9 +155,10 @@ class ClipCommand(
 
             currentCoroutineContext().ensureActive()
 
-            if (File(outFile).exists())
-                sendMedia(outFile, stream)
-            else
+            if (File(outFile).exists()) {
+                val videoInfo = prepareVideoInfo(outFile)
+                sendMedia(outFile, stream, videoInfo)
+            } else
                 replyToMessage(localizedString(LocalizationKeys.GET_CLIP_FAIL))
         } catch (e: CancellationException) {
             throw e
@@ -173,17 +176,20 @@ class ClipCommand(
             ClipFormat.AUDIO -> ffmpegExtractAudio(inputFile, outFile, clipDurationSec)
         }
 
+    private suspend fun prepareVideoInfo(videoFile: String): VideoInfo =
+        runInterruptible(Dispatchers.IO) { probeVideoInfo(videoFile) } ?: VideoInfo()
+
     private fun startMessageKey(): String =
         when (format) {
             ClipFormat.VIDEO -> LocalizationKeys.START_GET_CLIP
             ClipFormat.AUDIO -> LocalizationKeys.START_GET_AUDIO_CLIP
         }
 
-    private fun sendMedia(file: String, stream: StreamInfo) {
+    private fun sendMedia(file: String, stream: StreamInfo, videoInfo: VideoInfo?) {
         val displayName = clipDisplayName(stream.login)
 
         when (format) {
-            ClipFormat.VIDEO -> replyToMessageWithVideo(file, displayName, createHtmlCaption(stream))
+            ClipFormat.VIDEO -> replyToMessageWithVideo(file, displayName, createHtmlCaption(stream), videoInfo)
             ClipFormat.AUDIO ->
                 replyToMessageWithAudio(file, displayName, stream.login, createHtmlCaption(stream), clipDurationSec.toInt())
         }
