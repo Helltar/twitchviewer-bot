@@ -1,7 +1,7 @@
 package com.helltar.twitchviewerbot.bot
 
 import com.annimon.tgbotsmodule.commands.context.MessageContext
-import com.helltar.twitchviewerbot.Strings
+import com.helltar.twitchviewerbot.LocalizationKeys
 import com.helltar.twitchviewerbot.commands.BotCommand
 import com.helltar.twitchviewerbot.database.dao.usersDao
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -37,7 +37,7 @@ object CommandExecutor {
             }
 
         if (!launch)
-            botCommand.replyToMessageAsync(Strings.localizedString(Strings.MANY_REQUEST, user.languageCode))
+            botCommand.replyToMessageAsync(LocalizationKeys.localizedString(LocalizationKeys.MANY_REQUEST, user.languageCode))
     }
 
     fun launch(key: String, task: suspend () -> Unit): Boolean {
@@ -79,7 +79,7 @@ object CommandExecutor {
         val activeJobs = requestsMap.filter { it.key.endsWith("@$userId") && it.value.isActive }
 
         if (activeJobs.isEmpty()) {
-            replyToMessage(Strings.localizedString(Strings.NO_ACTIVE_TASKS, languageCode))
+            replyToMessage(LocalizationKeys.localizedString(LocalizationKeys.NO_ACTIVE_TASKS, languageCode))
             return
         }
 
@@ -88,6 +88,6 @@ object CommandExecutor {
             job.cancel()
         }
 
-        replyToMessage(Strings.localizedString(Strings.TASKS_ARE_CANCELLED, languageCode))
+        replyToMessage(LocalizationKeys.localizedString(LocalizationKeys.TASKS_ARE_CANCELLED, languageCode))
     }
 }

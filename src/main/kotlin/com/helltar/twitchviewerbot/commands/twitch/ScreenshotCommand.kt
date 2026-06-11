@@ -1,7 +1,7 @@
 package com.helltar.twitchviewerbot.commands.twitch
 
 import com.annimon.tgbotsmodule.commands.context.MessageContext
-import com.helltar.twitchviewerbot.Strings
+import com.helltar.twitchviewerbot.LocalizationKeys
 import com.helltar.twitchviewerbot.bot.BotContext
 import com.helltar.twitchviewerbot.commands.TwitchCommand
 import com.helltar.twitchviewerbot.twitch.StreamInfo
@@ -18,7 +18,7 @@ class ScreenshotCommand(botContext: BotContext<MessageContext>) : TwitchCommand(
             if (channels.isNotEmpty())
                 fetchAndSendScreenshots(channels)
             else
-                replyToMessage(localizedString(Strings.SCREENSHOT_COMMAND_INFO))
+                replyToMessage(localizedString(LocalizationKeys.SCREENSHOT_COMMAND_INFO))
         } else {
             val channel = arguments.first()
 
@@ -28,13 +28,13 @@ class ScreenshotCommand(botContext: BotContext<MessageContext>) : TwitchCommand(
     }
 
     fun fetchAndSendScreenshots(channels: List<String>) {
-        val tempMessageId = replyToMessage(localizedString(Strings.WAIT_CHECK_ONLINE))
+        val tempMessageId = replyToMessage(localizedString(LocalizationKeys.WAIT_CHECK_ONLINE))
 
         try {
             val liveList =
                 runCatchingPreservingCancellation { twitchService.fetchActiveStreams(channels) }
                     .getOrElse {
-                        replyToMessage(localizedString(Strings.TWITCH_EXCEPTION))
+                        replyToMessage(localizedString(LocalizationKeys.TWITCH_EXCEPTION))
                         return
                     }
 
@@ -50,7 +50,7 @@ class ScreenshotCommand(botContext: BotContext<MessageContext>) : TwitchCommand(
                     }
                 }
             } else
-                replyToMessage(localizedString(Strings.EMPTY_ONLINE_LIST))
+                replyToMessage(localizedString(LocalizationKeys.EMPTY_ONLINE_LIST))
         } finally {
             deleteMessageAsync(tempMessageId)
         }

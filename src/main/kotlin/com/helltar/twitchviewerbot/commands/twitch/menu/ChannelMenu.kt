@@ -1,7 +1,7 @@
 package com.helltar.twitchviewerbot.commands.twitch.menu
 
-import com.helltar.twitchviewerbot.Strings
-import com.helltar.twitchviewerbot.Strings.localizedString
+import com.helltar.twitchviewerbot.LocalizationKeys
+import com.helltar.twitchviewerbot.LocalizationKeys.localizedString
 import com.helltar.twitchviewerbot.bot.BotDependencies
 import com.helltar.twitchviewerbot.coroutines.runCatchingPreservingCancellation
 import com.helltar.twitchviewerbot.database.dao.userChannelsDao
@@ -71,13 +71,13 @@ class ChannelMenu(
             keyboard.keyboardRow(
                 InlineKeyboardRow(
                     button(
-                        label(Strings.BTN_RECORD_ALL),
+                        label(LocalizationKeys.BTN_RECORD_ALL),
                         MenuAction.CLIP_ALL,
                         page = currentPage,
                         style = STYLE_PRIMARY
                     ),
                     button(
-                        label(Strings.BTN_CAPTURE_ALL),
+                        label(LocalizationKeys.BTN_CAPTURE_ALL),
                         MenuAction.SCREENSHOT_ALL,
                         page = currentPage,
                         style = STYLE_PRIMARY
@@ -87,7 +87,7 @@ class ChannelMenu(
         }
 
         keyboard.keyboardRow(
-            InlineKeyboardRow(button(label(Strings.BTN_SETTINGS), MenuAction.OPEN_SETTINGS, page = currentPage))
+            InlineKeyboardRow(button(label(LocalizationKeys.BTN_SETTINGS), MenuAction.OPEN_SETTINGS, page = currentPage))
         )
 
         return keyboard.keyboardRow(InlineKeyboardRow(closeButton())).build()
@@ -113,7 +113,7 @@ class ChannelMenu(
         return keyboard
             .keyboardRow(
                 InlineKeyboardRow(
-                    button(label(Strings.BTN_BACK), MenuAction.BACK, page = page),
+                    button(label(LocalizationKeys.BTN_BACK), MenuAction.BACK, page = page),
                     closeButton()
                 )
             )
@@ -127,14 +127,14 @@ class ChannelMenu(
             keyboard.keyboardRow(
                 InlineKeyboardRow(
                     button(
-                        label(Strings.BTN_SHORT_CLIP),
+                        label(LocalizationKeys.BTN_SHORT_CLIP),
                         MenuAction.CLIP_ONE,
                         channel,
                         page = page,
                         style = STYLE_PRIMARY
                     ),
                     button(
-                        label(Strings.BTN_AUDIO_CLIP),
+                        label(LocalizationKeys.BTN_AUDIO_CLIP),
                         MenuAction.CLIP_AUDIO_ONE,
                         channel,
                         page = page,
@@ -147,10 +147,10 @@ class ChannelMenu(
         return keyboard
             .keyboardRow(
                 InlineKeyboardRow(
-                    button(label(Strings.BTN_BACK), MenuAction.BACK, page = page),
-                    button(label(Strings.BTN_CLOSE_LIST), MenuAction.CLOSE),
+                    button(label(LocalizationKeys.BTN_BACK), MenuAction.BACK, page = page),
+                    button(label(LocalizationKeys.BTN_CLOSE_LIST), MenuAction.CLOSE),
                     button(
-                        label(Strings.BTN_DELETE),
+                        label(LocalizationKeys.BTN_DELETE),
                         MenuAction.DELETE_CHANNEL,
                         channel,
                         page = page,
@@ -189,7 +189,7 @@ class ChannelMenu(
     }
 
     private fun closeButton(): InlineKeyboardButton =
-        button(label(Strings.BTN_CLOSE_LIST), MenuAction.CLOSE)
+        button(label(LocalizationKeys.BTN_CLOSE_LIST), MenuAction.CLOSE)
 
     private fun button(
         text: String,

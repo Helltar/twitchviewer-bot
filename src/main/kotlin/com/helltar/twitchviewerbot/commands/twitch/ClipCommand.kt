@@ -1,7 +1,7 @@
 package com.helltar.twitchviewerbot.commands.twitch
 
 import com.annimon.tgbotsmodule.commands.context.MessageContext
-import com.helltar.twitchviewerbot.Strings
+import com.helltar.twitchviewerbot.LocalizationKeys
 import com.helltar.twitchviewerbot.bot.BotContext
 import com.helltar.twitchviewerbot.commands.TwitchCommand
 import com.helltar.twitchviewerbot.database.dao.usersDao
@@ -49,7 +49,7 @@ class ClipCommand(
             if (channels.isNotEmpty())
                 fetchAndSendClips(channels)
             else
-                replyToMessage(localizedString(Strings.CLIP_COMMAND_INFO))
+                replyToMessage(localizedString(LocalizationKeys.CLIP_COMMAND_INFO))
 
             return
         }
@@ -76,7 +76,7 @@ class ClipCommand(
             if (filtered.isNotEmpty())
                 fetchAndSendClips(filtered)
             else
-                replyToMessage(localizedString(Strings.FILTER_NO_CHANNELS_FOUND).format(input))
+                replyToMessage(localizedString(LocalizationKeys.FILTER_NO_CHANNELS_FOUND).format(input))
 
             return
         }
@@ -91,14 +91,14 @@ class ClipCommand(
         val activeStreams =
             runCatchingPreservingCancellation { twitchService.fetchActiveStreams(userLogins) }
                 .getOrElse {
-                    replyToMessage(localizedString(Strings.TWITCH_EXCEPTION))
+                    replyToMessage(localizedString(LocalizationKeys.TWITCH_EXCEPTION))
                     return
                 }
 
         if (activeStreams.isNotEmpty())
             retrieveAndSendClips(activeStreams)
         else
-            replyToMessage(localizedString(Strings.EMPTY_ONLINE_LIST))
+            replyToMessage(localizedString(LocalizationKeys.EMPTY_ONLINE_LIST))
     }
 
     suspend fun clip(channel: String) =
@@ -156,7 +156,7 @@ class ClipCommand(
             if (File(outFile).exists())
                 sendMedia(outFile, stream)
             else
-                replyToMessage(localizedString(Strings.GET_CLIP_FAIL))
+                replyToMessage(localizedString(LocalizationKeys.GET_CLIP_FAIL))
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -175,8 +175,8 @@ class ClipCommand(
 
     private fun startMessageKey(): String =
         when (format) {
-            ClipFormat.VIDEO -> Strings.START_GET_CLIP
-            ClipFormat.AUDIO -> Strings.START_GET_AUDIO_CLIP
+            ClipFormat.VIDEO -> LocalizationKeys.START_GET_CLIP
+            ClipFormat.AUDIO -> LocalizationKeys.START_GET_AUDIO_CLIP
         }
 
     private fun sendMedia(file: String, stream: StreamInfo) {

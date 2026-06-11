@@ -6,8 +6,8 @@ import com.annimon.tgbotsmodule.commands.SimpleCallbackQueryCommand
 import com.annimon.tgbotsmodule.commands.authority.For
 import com.annimon.tgbotsmodule.commands.context.CallbackQueryContext
 import com.annimon.tgbotsmodule.commands.context.MessageContext
-import com.helltar.twitchviewerbot.Strings
-import com.helltar.twitchviewerbot.Strings.localizedString
+import com.helltar.twitchviewerbot.LocalizationKeys
+import com.helltar.twitchviewerbot.LocalizationKeys.localizedString
 import com.helltar.twitchviewerbot.bot.*
 import com.helltar.twitchviewerbot.commands.twitch.ClipCommand
 import com.helltar.twitchviewerbot.commands.twitch.ClipFormat
@@ -41,7 +41,7 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
         log.debug { "menu callback: ${ctx.data()}" }
 
         if (user.id != callback.ownerId) {
-            ctx.answer(localizedString(Strings.DONT_TOUCH_IS_NOT_YOUR_LIST, user.languageCode).format(user.firstName))
+            ctx.answer(localizedString(LocalizationKeys.DONT_TOUCH_IS_NOT_YOUR_LIST, user.languageCode).format(user.firstName))
                 .callAsync(ctx.sender)
 
             return
@@ -54,7 +54,7 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
         if (started)
             ctx.answer("").callAsync(ctx.sender)
         else
-            ctx.answer(localizedString(Strings.MANY_REQUEST, user.languageCode)).callAsync(ctx.sender)
+            ctx.answer(localizedString(LocalizationKeys.MANY_REQUEST, user.languageCode)).callAsync(ctx.sender)
     }
 
     private suspend fun dispatch(ctx: CallbackQueryContext, callback: MenuCallback) {
@@ -74,7 +74,7 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
             MenuAction.CLOSE ->
                 editMessage(
                     ctx,
-                    localizedString(Strings.USER_CLOSE_LIST, languageCode).format(
+                    localizedString(LocalizationKeys.USER_CLOSE_LIST, languageCode).format(
                         ctx.user().firstName,
                         dependencies.settings.username
                     )
@@ -123,7 +123,7 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
         val channel = callback.channel ?: return
 
         val title =
-            localizedString(Strings.TITLE_CHANNEL_IS_SELECTED, languageCode).format(channel.toTwitchHtmlLink(channel))
+            localizedString(LocalizationKeys.TITLE_CHANNEL_IS_SELECTED, languageCode).format(channel.toTwitchHtmlLink(channel))
 
         editMessage(ctx, title, menu.channelMarkup(channel, callback.live, callback.page))
     }
@@ -136,11 +136,11 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
         languageCode: String?
     ) {
         if (userChannelsDao.isListEmpty(ownerId))
-            editMessage(ctx, localizedString(Strings.LIST_IS_EMPTY, languageCode))
+            editMessage(ctx, localizedString(LocalizationKeys.LIST_IS_EMPTY, languageCode))
         else
             editMessage(
                 ctx,
-                localizedString(Strings.TITLE_CHOOSE_CHANNEL_OR_ACTION, languageCode),
+                localizedString(LocalizationKeys.TITLE_CHOOSE_CHANNEL_OR_ACTION, languageCode),
                 menu.mainMarkup(page)
             )
     }
@@ -156,7 +156,7 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
 
         editMessage(
             ctx,
-            localizedString(Strings.TITLE_SETTINGS, languageCode).format(duration),
+            localizedString(LocalizationKeys.TITLE_SETTINGS, languageCode).format(duration),
             menu.settingsMarkup(duration, page)
         )
     }
