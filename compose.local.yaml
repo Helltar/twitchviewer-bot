@@ -1,0 +1,7 @@
+# docker compose -f compose.yaml -f compose.local.yaml up --build
+services:
+
+  twitchbot:
+    image: twitchbot:local
+    build:
+      context: .
