@@ -6,9 +6,12 @@ import com.helltar.twitchviewerbot.bot.TwitchViewerBot
 import com.helltar.twitchviewerbot.bot.toBotSettings
 import com.helltar.twitchviewerbot.database.Database
 import com.helltar.twitchviewerbot.twitch.TwitchService
+import com.helltar.twitchviewerbot.utils.TempStorage
 
 fun main(args: Array<String>) {
     Database.init(Config.database)
+
+    TempStorage.init()
 
     val telegram = Config.telegram
 

@@ -11,6 +11,7 @@ import com.helltar.twitchviewerbot.utils.ProcessUtils.kill
 import com.helltar.twitchviewerbot.utils.ProcessUtils.startStreamlinkProcess
 import com.helltar.twitchviewerbot.utils.StringUtils.plusUUID
 import com.helltar.twitchviewerbot.utils.StringUtils.toTwitchHtmlLink
+import com.helltar.twitchviewerbot.utils.TempStorage
 import com.helltar.twitchviewerbot.utils.runCatchingPreservingCancellation
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
@@ -30,7 +31,7 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
         // covering stream resolution, playlist fetching and initial buffering
         const val STREAMLINK_TIMEOUT_HEADROOM_SEC = 30L
 
-        val TEMP_DIR = System.getProperty("java.io.tmpdir") ?: "/tmp"
+        val CLIP_NAME_TIMESTAMP: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm")
         val log = KotlinLogging.logger {}
     }
 
@@ -181,10 +182,8 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
     }
 
     private fun generateOutputFilename(prefix: String, tempName: String) =
-        "$TEMP_DIR/${prefix}_$tempName.mp4"
+        TempStorage.clipsDir.resolve("${prefix}_$tempName.mp4").toString()
 
-    private fun clipDisplayName(channelLogin: String): String {
-        val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmm"))
-        return "${channelLogin}_$timestamp.mp4"
-    }
+    private fun clipDisplayName(channelLogin: String): String =
+        "${channelLogin}_${LocalDateTime.now().format(CLIP_NAME_TIMESTAMP)}.mp4"
 }
