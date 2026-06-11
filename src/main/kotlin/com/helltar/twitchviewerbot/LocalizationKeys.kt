@@ -8,6 +8,8 @@ object LocalizationKeys {
     const val CHANNEL_ADDED_TO_LIST = "channel_added_to_list"
     const val CHANNEL_ALREADY_EXISTS_IN_LIST = "channel_already_exists_in_list"
     const val CLIP_COMMAND_INFO = "clip_command_info"
+    const val CLIP_TOO_LARGE = "clip_too_large"
+    const val CLIP_TRIMMED = "clip_trimmed"
     const val DONT_TOUCH_IS_NOT_YOUR_LIST = "dont_touch_is_not_your_list"
     const val EMPTY_ONLINE_LIST = "empty_online_list"
     const val FILTER_NO_CHANNELS_FOUND = "filter_no_channels_found"

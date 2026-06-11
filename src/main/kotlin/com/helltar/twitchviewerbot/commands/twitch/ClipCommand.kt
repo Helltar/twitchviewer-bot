@@ -4,9 +4,8 @@ import com.annimon.tgbotsmodule.commands.context.MessageContext
 import com.helltar.twitchviewerbot.LocalizationKeys
 import com.helltar.twitchviewerbot.bot.BotContext
 import com.helltar.twitchviewerbot.commands.TwitchCommand
-import com.helltar.twitchviewerbot.database.dao.usersDao
-import com.helltar.twitchviewerbot.twitch.StreamInfo
 import com.helltar.twitchviewerbot.coroutines.runCatchingPreservingCancellation
+import com.helltar.twitchviewerbot.database.dao.usersDao
 import com.helltar.twitchviewerbot.media.ClipProcesses.ffmpegExtractAudio
 import com.helltar.twitchviewerbot.media.ClipProcesses.ffmpegPrepareClip
 import com.helltar.twitchviewerbot.media.ClipProcesses.kill
@@ -16,6 +15,7 @@ import com.helltar.twitchviewerbot.media.ClipTempStorage
 import com.helltar.twitchviewerbot.media.VideoInfo
 import com.helltar.twitchviewerbot.text.plusUUID
 import com.helltar.twitchviewerbot.text.toTwitchHtmlLink
+import com.helltar.twitchviewerbot.twitch.StreamInfo
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.*
 import java.io.File
@@ -32,6 +32,13 @@ class ClipCommand(
     private companion object {
         const val MAX_CONCURRENT_CLIPS = 3
         const val DEFAULT_CLIP_DURATION_SEC = 30L
+
+        // Bot API rejects uploads over 50 MB; decimal megabytes to stay under the limit regardless of how Telegram counts
+        const val MAX_UPLOAD_SIZE_BYTES = 50_000_000L
+
+        // stream copy keeps the source bitrate, so size scales ~linearly with duration;
+        // the margin absorbs container overhead and the cut landing past the requested timestamp
+        const val TRIM_SAFETY_FACTOR = 0.95
 
         // extra wall-clock headroom over the clip duration before the process is treated as hung and killed,
         // covering stream resolution, playlist fetching and initial buffering
@@ -150,16 +157,34 @@ class ClipCommand(
 
             currentCoroutineContext().ensureActive()
 
-            prepareMedia(streamlinkFile, outFile)
+            prepareMedia(streamlinkFile, outFile, clipDurationSec)
                 .waitForExit(clipDurationSec)
 
             currentCoroutineContext().ensureActive()
 
-            if (File(outFile).exists()) {
-                val videoInfo = prepareVideoInfo(outFile)
-                sendMedia(outFile, stream, videoInfo)
-            } else
+            val clipFile = File(outFile)
+
+            if (!clipFile.exists()) {
                 replyToMessage(localizedString(LocalizationKeys.GET_CLIP_FAIL))
+                return
+            }
+
+            val trimmedDurationSec =
+                if (clipFile.length() > MAX_UPLOAD_SIZE_BYTES)
+                    trimToUploadLimit(streamlinkFile, outFile, clipFile.length())
+                else
+                    null
+
+            currentCoroutineContext().ensureActive()
+
+            if (!clipFile.exists() || clipFile.length() > MAX_UPLOAD_SIZE_BYTES) {
+                log.warn { "clip of $channelLogin for user-$userId exceeds the upload limit even after trimming" }
+                replyToMessage(localizedString(LocalizationKeys.CLIP_TOO_LARGE))
+                return
+            }
+
+            val videoInfo = prepareVideoInfo(outFile)
+            sendMedia(outFile, stream, videoInfo, trimmedDurationSec)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -170,14 +195,31 @@ class ClipCommand(
         }
     }
 
-    private fun prepareMedia(inputFile: String, outFile: String): Process =
+    private fun prepareMedia(inputFile: String, outFile: String, durationSec: Long): Process =
         when (format) {
-            ClipFormat.VIDEO -> ffmpegPrepareClip(inputFile, outFile, clipDurationSec)
-            ClipFormat.AUDIO -> ffmpegExtractAudio(inputFile, outFile, clipDurationSec)
+            ClipFormat.VIDEO -> ffmpegPrepareClip(inputFile, outFile, durationSec)
+            ClipFormat.AUDIO -> ffmpegExtractAudio(inputFile, outFile, durationSec)
         }
 
-    private suspend fun prepareVideoInfo(videoFile: String): VideoInfo =
-        runInterruptible(Dispatchers.IO) { probeVideoInfo(videoFile) } ?: VideoInfo()
+    private suspend fun trimToUploadLimit(streamlinkFile: String, outFile: String, clipSizeBytes: Long): Long {
+        // the recording can come out shorter than requested (stream lag, late start), so size the cut off the real duration
+        val actualDurationSec = prepareVideoInfo(outFile)?.durationSec?.toLong() ?: clipDurationSec
+
+        val trimmedDurationSec =
+            (actualDurationSec * TRIM_SAFETY_FACTOR * MAX_UPLOAD_SIZE_BYTES / clipSizeBytes).toLong().coerceAtLeast(1)
+
+        log.info { "clip is $clipSizeBytes bytes, re-cutting from $actualDurationSec to $trimmedDurationSec s to fit the upload limit" }
+
+        File(outFile).delete()
+
+        prepareMedia(streamlinkFile, outFile, trimmedDurationSec)
+            .waitForExit(clipDurationSec)
+
+        return trimmedDurationSec
+    }
+
+    private suspend fun prepareVideoInfo(videoFile: String): VideoInfo? =
+        runInterruptible(Dispatchers.IO) { probeVideoInfo(videoFile) }
 
     private fun startMessageKey(): String =
         when (format) {
@@ -185,13 +227,18 @@ class ClipCommand(
             ClipFormat.AUDIO -> LocalizationKeys.START_GET_AUDIO_CLIP
         }
 
-    private fun sendMedia(file: String, stream: StreamInfo, videoInfo: VideoInfo?) {
+    private fun sendMedia(file: String, stream: StreamInfo, videoInfo: VideoInfo?, trimmedDurationSec: Long? = null) {
         val displayName = clipDisplayName(stream.login)
 
+        var caption = createHtmlCaption(stream)
+
+        if (trimmedDurationSec != null)
+            caption += "\n\n" + localizedString(LocalizationKeys.CLIP_TRIMMED).format(trimmedDurationSec)
+
         when (format) {
-            ClipFormat.VIDEO -> replyToMessageWithVideo(file, displayName, createHtmlCaption(stream), videoInfo)
+            ClipFormat.VIDEO -> replyToMessageWithVideo(file, displayName, caption, videoInfo)
             ClipFormat.AUDIO ->
-                replyToMessageWithAudio(file, displayName, stream.login, createHtmlCaption(stream), clipDurationSec.toInt())
+                replyToMessageWithAudio(file, displayName, stream.login, caption, (trimmedDurationSec ?: clipDurationSec).toInt())
         }
     }
 
