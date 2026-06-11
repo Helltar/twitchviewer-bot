@@ -34,8 +34,10 @@ object Strings {
     const val BTN_RECORD_ALL = "btn_record_all"
     const val BTN_SHORT_CLIP = "btn_short_clip"
     const val BTN_CAPTURE_ALL = "btn_capture_all"
+    const val BTN_SETTINGS = "btn_settings"
     const val TITLE_CHANNEL_IS_SELECTED = "title_channel_is_selected"
     const val TITLE_CHOOSE_CHANNEL_OR_ACTION = "title_choose_channel_or_action"
+    const val TITLE_SETTINGS = "title_settings"
 
     private val localization = ResourceBundleLocalizationService("language")
 

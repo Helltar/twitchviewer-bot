@@ -20,7 +20,7 @@ object Database {
 
         runBlocking {
             suspendTransaction(database) {
-                SchemaUtils.create(UsersTable, UserChannelsTable)
+                SchemaUtils.createMissingTablesAndColumns(UsersTable, UserChannelsTable)
             }
         }
     }

@@ -8,11 +8,7 @@ import com.annimon.tgbotsmodule.commands.context.CallbackQueryContext
 import com.annimon.tgbotsmodule.commands.context.MessageContext
 import com.helltar.twitchviewerbot.Strings
 import com.helltar.twitchviewerbot.Strings.localizedString
-import com.helltar.twitchviewerbot.bot.Actor
-import com.helltar.twitchviewerbot.bot.BotContext
-import com.helltar.twitchviewerbot.bot.BotDependencies
-import com.helltar.twitchviewerbot.bot.CommandExecutor
-import com.helltar.twitchviewerbot.bot.RequestKey
+import com.helltar.twitchviewerbot.bot.*
 import com.helltar.twitchviewerbot.commands.twitch.ClipCommand
 import com.helltar.twitchviewerbot.commands.twitch.ScreenshotCommand
 import com.helltar.twitchviewerbot.database.dao.userChannelsDao
@@ -83,6 +79,17 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
                     )
                 )
 
+            MenuAction.OPEN_SETTINGS -> showSettings(ctx, menu, ownerId, callback.page, languageCode)
+
+            MenuAction.SET_DURATION -> {
+                val duration = callback.value
+
+                if (duration != null && duration in CLIP_DURATION_PRESETS)
+                    usersDao.setClipDuration(ownerId, duration)
+
+                showSettings(ctx, menu, ownerId, callback.page, languageCode)
+            }
+
             MenuAction.CLIP_ONE -> callback.channel?.let { clipCommand(ctx, ownerId, languageCode).clip(it) }
 
             MenuAction.CLIP_ALL -> withChannels(ownerId) {
@@ -134,6 +141,22 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
             )
     }
 
+    private suspend fun showSettings(
+        ctx: CallbackQueryContext,
+        menu: ChannelMenu,
+        ownerId: Long,
+        page: Int,
+        languageCode: String?
+    ) {
+        val duration = usersDao.clipDuration(ownerId)
+
+        editMessage(
+            ctx,
+            localizedString(Strings.TITLE_SETTINGS, languageCode).format(duration),
+            menu.settingsMarkup(duration, page)
+        )
+    }
+
     private suspend inline fun withChannels(ownerId: Long, action: (List<String>) -> Unit) {
         val channels = userChannelsDao.list(ownerId)
         if (channels.isNotEmpty()) action(channels)
@@ -145,8 +168,16 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
     private fun screenshotCommand(ctx: CallbackQueryContext, ownerId: Long, languageCode: String?): ScreenshotCommand =
         ScreenshotCommand(commandContext(ctx, ownerId, languageCode))
 
-    private fun commandContext(ctx: CallbackQueryContext, ownerId: Long, languageCode: String?): BotContext<MessageContext> =
-        BotContext(MessageContext(ctx.sender, Update().apply { message = ctx.message() }, ""), dependencies, Actor(ownerId, languageCode))
+    private fun commandContext(
+        ctx: CallbackQueryContext,
+        ownerId: Long,
+        languageCode: String?
+    ): BotContext<MessageContext> =
+        BotContext(
+            MessageContext(ctx.sender, Update().apply { message = ctx.message() }, ""),
+            dependencies,
+            Actor(ownerId, languageCode)
+        )
 
     private fun editMessage(ctx: CallbackQueryContext, text: String, replyMarkup: InlineKeyboardMarkup? = null) =
         ctx.editMessage(text, replyMarkup)

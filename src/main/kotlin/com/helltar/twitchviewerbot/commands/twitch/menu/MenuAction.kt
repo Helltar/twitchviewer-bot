@@ -7,6 +7,8 @@ enum class MenuAction(val code: String) {
     CLIP_ALL("ca"),
     SCREENSHOT_ALL("sa"),
     DELETE_CHANNEL("rm"),
+    OPEN_SETTINGS("st"),
+    SET_DURATION("du"),
     BACK("bk"),
     PAGE("pg"),
     CLOSE("cl");

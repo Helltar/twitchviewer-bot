@@ -5,13 +5,16 @@ data class MenuCallback(
     val ownerId: Long,
     val page: Int = 0,
     val live: Boolean = false,
-    val channel: String? = null
+    val channel: String? = null,
+    val value: Int? = null // generic numeric payload, e.g. the chosen clip duration for SET_DURATION
 ) {
     fun serialize(): String =
-        listOf(action.code, ownerId, page, if (live) 1 else 0, channel ?: NO_CHANNEL).joinToString(" ")
+        listOf(action.code, ownerId, page, if (live) 1 else 0, channel ?: NO_CHANNEL, value ?: NO_VALUE)
+            .joinToString(" ")
 
     companion object {
         private const val NO_CHANNEL = "-"
+        private const val NO_VALUE = "-"
         private val WHITESPACE = "\\s+".toRegex()
 
         fun parse(data: String): MenuCallback? {
@@ -21,7 +24,8 @@ data class MenuCallback(
             val page = parts.getOrNull(2)?.toIntOrNull() ?: 0
             val live = parts.getOrNull(3) == "1"
             val channel = parts.getOrNull(4)?.takeIf { it != NO_CHANNEL }
-            return MenuCallback(action, ownerId, page, live, channel)
+            val value = parts.getOrNull(5)?.toIntOrNull()
+            return MenuCallback(action, ownerId, page, live, channel, value)
         }
     }
 }

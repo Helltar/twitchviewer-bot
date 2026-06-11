@@ -4,6 +4,7 @@ import com.annimon.tgbotsmodule.commands.context.MessageContext
 import com.helltar.twitchviewerbot.Strings
 import com.helltar.twitchviewerbot.bot.BotContext
 import com.helltar.twitchviewerbot.commands.TwitchCommand
+import com.helltar.twitchviewerbot.database.dao.usersDao
 import com.helltar.twitchviewerbot.twitch.StreamInfo
 import com.helltar.twitchviewerbot.utils.ProcessUtils.ffmpegPrepareClip
 import com.helltar.twitchviewerbot.utils.ProcessUtils.kill
@@ -23,18 +24,18 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
 
     private companion object {
         const val MAX_CONCURRENT_CLIPS = 3
-        const val CLIP_DURATION_SEC = 40L
+        const val DEFAULT_CLIP_DURATION_SEC = 30L
 
-        // streamlink stops itself after CLIP_DURATION_SEC of media; this is a safety net for a hung process,
-        // with extra headroom for stream resolution, playlist fetching and initial buffering
-        const val STREAMLINK_TIMEOUT_SEC = CLIP_DURATION_SEC + 30
-        const val FFMPEG_TIMEOUT_SEC = CLIP_DURATION_SEC
+        // extra wall-clock headroom over the clip duration before the process is treated as hung and killed,
+        // covering stream resolution, playlist fetching and initial buffering
+        const val STREAMLINK_TIMEOUT_HEADROOM_SEC = 30L
 
         val TEMP_DIR = System.getProperty("java.io.tmpdir") ?: "/tmp"
         val log = KotlinLogging.logger {}
     }
 
     private val processes = ConcurrentLinkedQueue<Process>()
+    private var clipDurationSec = DEFAULT_CLIP_DURATION_SEC
 
     override suspend fun run() {
         if (arguments.isEmpty()) {
@@ -80,6 +81,8 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
     }
 
     suspend fun fetchAndSendClips(userLogins: List<String>) {
+        clipDurationSec = usersDao.clipDuration(userId).toLong()
+
         val activeStreams =
             runCatchingPreservingCancellation { twitchService.fetchActiveStreams(userLogins) }
                 .getOrElse {
@@ -133,12 +136,16 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
         val ffmpegFile = generateOutputFilename("ffmpeg", tempName)
 
         try {
-            log.info { "recording ${CLIP_DURATION_SEC}s clip of $channelLogin for user-$userId" }
+            log.info { "recording ${clipDurationSec}s clip of $channelLogin for user-$userId" }
 
-            startStreamlinkProcess(channelLogin, streamlinkFile, CLIP_DURATION_SEC).waitForExit(STREAMLINK_TIMEOUT_SEC)
+            startStreamlinkProcess(channelLogin, streamlinkFile, clipDurationSec)
+                .waitForExit(clipDurationSec + STREAMLINK_TIMEOUT_HEADROOM_SEC)
+
             currentCoroutineContext().ensureActive()
 
-            ffmpegPrepareClip(streamlinkFile, ffmpegFile, CLIP_DURATION_SEC).waitForExit(FFMPEG_TIMEOUT_SEC)
+            ffmpegPrepareClip(streamlinkFile, ffmpegFile, clipDurationSec)
+                .waitForExit(clipDurationSec)
+
             currentCoroutineContext().ensureActive()
 
             if (File(ffmpegFile).exists())

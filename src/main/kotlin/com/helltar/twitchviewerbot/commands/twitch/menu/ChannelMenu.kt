@@ -10,6 +10,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow
 import java.util.concurrent.ConcurrentHashMap
 
+val CLIP_DURATION_PRESETS = listOf(15, 30, 45, 60, 120)
+
 private class CachedLiveLogins(val logins: Set<String>, val expiresAt: Long)
 
 class ChannelMenu(
@@ -20,6 +22,7 @@ class ChannelMenu(
     private companion object {
         const val CHANNELS_PER_PAGE = 8
         const val CHANNELS_PER_ROW = 2
+        const val DURATIONS_PER_ROW = 3
 
         const val STYLE_DEFAULT = ""
         const val STYLE_PRIMARY = "primary"
@@ -83,7 +86,38 @@ class ChannelMenu(
             )
         }
 
+        keyboard.keyboardRow(
+            InlineKeyboardRow(button(label(Strings.BTN_SETTINGS), MenuAction.OPEN_SETTINGS, page = currentPage))
+        )
+
         return keyboard.keyboardRow(InlineKeyboardRow(closeButton())).build()
+    }
+
+    fun settingsMarkup(currentDuration: Int, page: Int): InlineKeyboardMarkup {
+        val keyboard = InlineKeyboardMarkup.builder()
+
+        CLIP_DURATION_PRESETS
+            .map { duration ->
+                val selected = duration == currentDuration
+                button(
+                    if (selected) "✅ ${duration}s" else "${duration}s",
+                    MenuAction.SET_DURATION,
+                    page = page,
+                    value = duration,
+                    style = if (selected) STYLE_SUCCESS else STYLE_DEFAULT
+                )
+            }
+            .chunked(DURATIONS_PER_ROW)
+            .forEach { row -> keyboard.keyboardRow(InlineKeyboardRow(row)) }
+
+        return keyboard
+            .keyboardRow(
+                InlineKeyboardRow(
+                    button(label(Strings.BTN_BACK), MenuAction.BACK, page = page),
+                    closeButton()
+                )
+            )
+            .build()
     }
 
     fun channelMarkup(channel: String, live: Boolean, page: Int): InlineKeyboardMarkup {
@@ -156,9 +190,10 @@ class ChannelMenu(
         channel: String? = null,
         live: Boolean = false,
         page: Int = 0,
-        style: String = STYLE_DEFAULT
+        style: String = STYLE_DEFAULT,
+        value: Int? = null
     ): InlineKeyboardButton {
-        val callbackData = MenuCallback(action, ownerId, page, live, channel).serialize()
+        val callbackData = MenuCallback(action, ownerId, page, live, channel, value).serialize()
         return InlineKeyboardButton.builder().text(text).style(style).callbackData(callbackData).build()
     }
 
