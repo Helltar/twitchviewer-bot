@@ -10,23 +10,26 @@ object ProcessUtils {
 
     private val log = KotlinLogging.logger {}
 
-    fun ffmpegPrepareClip(inputFilename: String, outFilename: String, lengthTime: Long): Process { // todo: needs review
+    fun ffmpegPrepareClip(inputFilename: String, outFilename: String, lengthTime: Long): Process {
         val command =
             listOf(
                 "ffmpeg", "-i", inputFilename,
-                "-fs", "9.9M", // if the file size exceeds 10MB, a black video thumbnail (preview) may appear on telegram
                 "-t", "$lengthTime",
                 "-c", "copy",
+                // streamlink writes raw MPEG-TS; remux into MP4 with moov atom at the front so Telegram
+                // reads duration/dimensions and shows an inline player instead of a black "document" preview
+                "-movflags", "+faststart",
                 "-loglevel", "quiet", outFilename
             )
 
         return command.startProcessOrThrow("failed to start ffmpeg")
     }
 
-    fun startStreamlinkProcess(channelName: String, outFilename: String): Process {
+    fun startStreamlinkProcess(channelName: String, outFilename: String, durationSec: Long): Process {
         val command =
             listOf(
                 "streamlink",
+                "--stream-segmented-duration", "${durationSec}s", // streamlink stops on its own after this much media
                 "https://www.twitch.tv/$channelName",
                 "720p,720p60,best",
                 "-o", outFilename

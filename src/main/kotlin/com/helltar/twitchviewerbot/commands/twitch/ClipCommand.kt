@@ -22,7 +22,12 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
     private companion object {
         const val MAX_CONCURRENT_CLIPS = 3
         const val CLIP_DURATION_SEC = 40L
+
+        // streamlink stops itself after CLIP_DURATION_SEC of media; this is a safety net for a hung process,
+        // with extra headroom for stream resolution, playlist fetching and initial buffering
+        const val STREAMLINK_TIMEOUT_SEC = CLIP_DURATION_SEC + 30
         const val FFMPEG_TIMEOUT_SEC = CLIP_DURATION_SEC
+
         val TEMP_DIR = System.getProperty("java.io.tmpdir") ?: "/tmp"
         val log = KotlinLogging.logger {}
     }
@@ -128,7 +133,7 @@ class ClipCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
         try {
             log.info { "recording ${CLIP_DURATION_SEC}s clip of $channelLogin for user-$userId" }
 
-            startStreamlinkProcess(channelLogin, streamlinkFile).waitForExit(CLIP_DURATION_SEC)
+            startStreamlinkProcess(channelLogin, streamlinkFile, CLIP_DURATION_SEC).waitForExit(STREAMLINK_TIMEOUT_SEC)
             currentCoroutineContext().ensureActive()
 
             ffmpegPrepareClip(streamlinkFile, ffmpegFile, CLIP_DURATION_SEC).waitForExit(FFMPEG_TIMEOUT_SEC)

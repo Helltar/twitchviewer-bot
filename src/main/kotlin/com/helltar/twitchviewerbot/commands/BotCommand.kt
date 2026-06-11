@@ -53,6 +53,7 @@ abstract class BotCommand(
             .setFile(File(filename))
             .setCaption(caption)
             .setParseMode(ParseMode.HTML)
+            .setSupportsStreaming(true) // hint Telegram to show an inline player; dimensions/duration are read from the file
             .call(ctx.sender)
 
     protected fun deleteMessageAsync(messageId: Int) {
