@@ -1,11 +1,11 @@
 package com.helltar.twitchviewerbot
 
 import com.annimon.tgbotsmodule.Runner
+import com.helltar.heartbeat.Heartbeat
 import com.helltar.twitchviewerbot.bot.BotDependencies
 import com.helltar.twitchviewerbot.bot.TwitchViewerBot
 import com.helltar.twitchviewerbot.bot.toBotSettings
 import com.helltar.twitchviewerbot.database.Database
-import com.helltar.twitchviewerbot.health.Heartbeat
 import com.helltar.twitchviewerbot.media.ClipTempStorage
 import com.helltar.twitchviewerbot.twitch.TwitchService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -31,14 +31,13 @@ fun main(args: Array<String>) {
             twitchService = TwitchService(Config.twitch)
         )
 
-    val heartbeat = Heartbeat()
-    heartbeat.start()
+    val heartbeat = Heartbeat().start()
 
     Runner.run(args.firstOrNull().orEmpty(), listOf(TwitchViewerBot(telegram.token, dependencies, heartbeat)))
 
     // the runner only logs a failed registration and returns as if it had worked, so a bot that never
     // started polling would sit here alive and idle. exiting hands the retry to the container runtime.
-    if (!heartbeat.awaitFirstPoll(POLLING_START_TIMEOUT)) {
+    if (!heartbeat.awaitFirstBeat(POLLING_START_TIMEOUT)) {
         log.error {
             "Long polling did not start within ${POLLING_START_TIMEOUT.inWholeSeconds}s — " +
                     "exiting so the container is restarted"

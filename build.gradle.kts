@@ -13,6 +13,7 @@ repositories {
 
 dependencies {
     implementation(libs.tgbots.module) { exclude("org.telegram", "telegrambots-webhook") }
+    implementation(libs.heartbeat)
 
     implementation(libs.twitch4j)
     implementation(libs.dotenv.kotlin)
