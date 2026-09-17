@@ -11,9 +11,9 @@
 Download the configuration files:
 
 ```bash
-mkdir twitchbot && cd twitchbot && \
-wget https://raw.githubusercontent.com/Helltar/twitchviewer-bot/master/{.env.example,compose.yaml} && \
-cp .env.example .env
+mkdir twitchbot && cd twitchbot && curl -fsSLO \
+  "https://github.com/Helltar/twitchviewer-bot/raw/master/{compose.yaml,.env.example}" && \
+  mv .env.example .env
 ```
 
 Edit `.env` and fill in your values:
