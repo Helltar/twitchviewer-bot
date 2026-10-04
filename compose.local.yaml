@@ -1,7 +1,8 @@
-# docker compose -f compose.yaml -f compose.local.yaml up --build
+# Local override: build the image from this checkout instead of pulling it.
+# Usage: docker compose -f compose.yaml -f compose.local.yaml up -d
 services:
 
   twitchbot:
     image: twitchbot:local
-    build:
-      context: .
+    pull_policy: build
+    build: .
