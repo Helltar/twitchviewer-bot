@@ -19,10 +19,8 @@ mkdir twitchbot && cd twitchbot && curl -fsSLO \
 Edit `.env` and fill in your values:
 
 - `CREATOR_ID`: your Telegram user ID
-- `BOT_TOKEN`: Telegram bot token ([BotFather](https://t.me/BotFather))
-- `BOT_USERNAME`: Telegram bot username ([BotFather](https://t.me/BotFather))
-- `TWITCH_CLIENT_ID`: Twitch app client ID ([Twitch Developer Console](https://dev.twitch.tv/console/apps))
-- `TWITCH_CLIENT_SECRET`: Twitch app client secret ([Twitch Developer Console](https://dev.twitch.tv/console/apps))
+- `BOT_TOKEN` and `BOT_USERNAME`: Telegram bot token and username
+- `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET`: Twitch app credentials ([Twitch Developer Console](https://dev.twitch.tv/console/apps))
 - `POSTGRESQL_*` + `DATABASE_*`: PostgreSQL connection settings
 
 Start the bot:
@@ -35,6 +33,18 @@ docker compose up -d
 > `compose.yaml` includes a PostgreSQL container, so no external database is required.
 > To use your own PostgreSQL instance instead, remove the `postgres` service from
 > `compose.yaml` and point the `POSTGRESQL_*` / `DATABASE_*` values in `.env` to it.
+
+### Build from source
+
+To run your own build instead of the published image, clone the repository, create `.env` the
+same way, and add `compose.local.yaml` on top — it builds the image from the checkout on every
+start:
+
+```bash
+git clone https://github.com/Helltar/twitchviewer-bot.git && cd twitchviewer-bot
+cp .env.example .env
+docker compose -f compose.yaml -f compose.local.yaml up -d
+```
 
 ## Commands
 
