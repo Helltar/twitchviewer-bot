@@ -4,6 +4,7 @@
 .idea/
 .kotlin/
 
+assets/
 build/
 data/
 deploy/
