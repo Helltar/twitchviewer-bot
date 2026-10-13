@@ -14,6 +14,9 @@ val CLIP_DURATION_PRESETS = listOf(15, 30, 45, 60, 120)
 
 private class CachedLiveLogins(val logins: Set<String>, val expiresAt: Long)
 
+/** What one step of the menu shows: the message text and the keyboard under it. */
+class MenuScreen(val text: String, val markup: InlineKeyboardMarkup)
+
 class ChannelMenu(
     private val dependencies: BotDependencies,
     private val ownerId: Long,
@@ -38,9 +41,21 @@ class ChannelMenu(
         val liveCache = ConcurrentHashMap<Long, CachedLiveLogins>()
     }
 
-    suspend fun mainMarkup(page: Int = 0): InlineKeyboardMarkup {
+    suspend fun main(page: Int = 0): MenuScreen {
         val channels = userChannelsDao.list(ownerId)
         val liveLogins = fetchLiveLogins(channels)
+
+        // only a lookup that answered can say nobody is live; a failed one just shows no live channels
+        val title =
+            if (liveLogins != null && liveLogins.isEmpty() && channels.isNotEmpty())
+                label(Localization.TITLE_NOBODY_LIVE)
+            else
+                label(Localization.TITLE_CHOOSE_CHANNEL_OR_ACTION)
+
+        return MenuScreen(title, mainMarkup(channels, liveLogins.orEmpty(), page))
+    }
+
+    private fun mainMarkup(channels: List<String>, liveLogins: Set<String>, page: Int): InlineKeyboardMarkup {
         val keyboard = InlineKeyboardMarkup.builder()
 
         val pages = channels.sortedByDescending { it.lowercase() in liveLogins }.chunked(CHANNELS_PER_PAGE)
@@ -161,7 +176,8 @@ class ChannelMenu(
             .build()
     }
 
-    private fun fetchLiveLogins(channels: List<String>): Set<String> {
+    // null when twitch could not be asked, so the caller can tell "nobody is live" from "unknown"
+    private fun fetchLiveLogins(channels: List<String>): Set<String>? {
         val now = System.currentTimeMillis()
 
         liveCache[ownerId]?.let { cached ->
@@ -170,7 +186,7 @@ class ChannelMenu(
 
         val streams =
             runCatchingPreservingCancellation { dependencies.twitchService.fetchActiveStreams(channels) }
-                .getOrElse { return emptySet() }
+                .getOrElse { return null }
 
         val logins = streams.mapTo(mutableSetOf()) { it.login.lowercase() }
         liveCache[ownerId] = CachedLiveLogins(logins, now + LIVE_CACHE_TTL_MS)

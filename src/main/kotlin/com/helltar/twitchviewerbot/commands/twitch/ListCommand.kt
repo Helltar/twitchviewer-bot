@@ -15,8 +15,8 @@ class ListCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botCon
             return
         }
 
-        val menu = ChannelMenu(dependencies, userId, ctx.user().languageCode)
+        val screen = ChannelMenu(dependencies, userId, ctx.user().languageCode).main()
 
-        replyToMessage(localizedString(Localization.TITLE_CHOOSE_CHANNEL_OR_ACTION), replyMarkup = menu.mainMarkup())
+        replyToMessage(screen.text, replyMarkup = screen.markup)
     }
 }

@@ -74,10 +74,7 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
             MenuAction.CLOSE ->
                 editMessage(
                     ctx,
-                    localizedString(Localization.USER_CLOSE_LIST, languageCode).format(
-                        ctx.user().firstName,
-                        dependencies.settings.username
-                    )
+                    localizedString(Localization.USER_CLOSE_LIST, languageCode).format(dependencies.settings.username)
                 )
 
             MenuAction.OPEN_SETTINGS -> showSettings(ctx, menu, ownerId, callback.page, languageCode)
@@ -122,8 +119,9 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
     ) {
         val channel = callback.channel ?: return
 
-        val title =
-            localizedString(Localization.TITLE_CHANNEL_IS_SELECTED, languageCode).format(channel.toTwitchHtmlLink(channel))
+        // the clip buttons are only there for a live channel, so the title says which case this is
+        val titleKey = if (callback.live) Localization.TITLE_CHANNEL_LIVE else Localization.TITLE_CHANNEL_OFFLINE
+        val title = localizedString(titleKey, languageCode).format(channel.toTwitchHtmlLink(channel))
 
         editMessage(ctx, title, menu.channelMarkup(channel, callback.live, callback.page))
     }
@@ -138,11 +136,7 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
         if (!userChannelsDao.hasChannels(ownerId))
             editMessage(ctx, localizedString(Localization.LIST_IS_EMPTY, languageCode))
         else
-            editMessage(
-                ctx,
-                localizedString(Localization.TITLE_CHOOSE_CHANNEL_OR_ACTION, languageCode),
-                menu.mainMarkup(page)
-            )
+            menu.main(page).let { editMessage(ctx, it.text, it.markup) }
     }
 
     private suspend fun showSettings(
