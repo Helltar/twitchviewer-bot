@@ -46,8 +46,9 @@ class ClipCommand(
         // covering stream resolution, playlist fetching and initial buffering
         const val STREAMLINK_TIMEOUT_HEADROOM_SEC = 30L
 
-        // clips that start together, as when a batch finishes and frees several slots, share one status edit
-        val STATUS_EDIT_INTERVAL = 1.seconds
+        // changes this close together share one status edit: a clip finishing and the next one taking its slot,
+        // or a whole batch finishing at once
+        val STATUS_EDIT_DELAY = 1.seconds
 
         val CLIP_NAME_TIMESTAMP: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd_HHmm")
         val log = KotlinLogging.logger {}
@@ -139,11 +140,14 @@ class ClipCommand(
     private suspend fun showStatusUpdates(messageId: Int, initialText: String, status: ClipStatus) {
         var shown = initialText
 
-        status.text.collect { text ->
+        status.text.collect {
+            delay(STATUS_EDIT_DELAY)
+
+            val text = status.text.value
+
             if (text != shown) {
                 editMessage(messageId, text)
                 shown = text
-                delay(STATUS_EDIT_INTERVAL)
             }
         }
     }
@@ -165,10 +169,14 @@ class ClipCommand(
             }
         }
 
-        // not shown on its own: the finished clip is already in the chat, and the next one to start redraws the message
         fun finished(stream: StreamInfo) {
             synchronized(lock) {
                 recording.remove(stream)
+                waiting.remove(stream)
+
+                // the last one leaves nothing to show, and the message is deleted right after
+                if (recording.isNotEmpty() || waiting.isNotEmpty())
+                    text.value = render()
             }
         }
 
