@@ -54,8 +54,12 @@ docker compose -f compose.yaml -f compose.local.yaml up -d
 - `/clip <channel>` - from a specific channel (even if it isn't in your list)
 - `/clip <prefix>.` - only from tracked channels whose name starts with `<prefix>`, e.g. `/clip em.`
 - `/clip !<prefix>.` - from all tracked channels **except** those starting with `<prefix>`, e.g. `/clip !em.`
+- `/clip <channel> <channel> ...` - from several channels at once
+- names and filters combine: `/clip em. ma. !emi.` records the tracked channels starting with `em` or `ma`, except those starting with `emi`
 
-**`/screenshot`** - capture screenshots
+Clips record three at a time per user. The rest wait in a queue, and another `/clip` sent meanwhile joins the same queue.
+
+**`/screenshot`** - capture screenshots, with the same arguments as `/clip`
 
 - `/screenshot` - from all tracked channels
 - `/screenshot <channel>` - from a specific channel

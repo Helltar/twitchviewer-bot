@@ -25,6 +25,9 @@ dependencies {
 
     implementation(libs.kotlin.logging)
     runtimeOnly(libs.logback.classic)
+
+    testImplementation(kotlin("test"))
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 application {
@@ -33,4 +36,8 @@ application {
 
 kotlin {
     jvmToolchain(21)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }

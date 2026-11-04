@@ -1,5 +1,6 @@
 package com.helltar.twitchviewerbot.commands
 
+import com.annimon.tgbotsmodule.api.methods.Methods
 import com.annimon.tgbotsmodule.commands.context.MessageContext
 import com.helltar.twitchviewerbot.Localization
 import com.helltar.twitchviewerbot.media.VideoInfo
@@ -83,6 +84,13 @@ abstract class BotCommand(
             .setCaption(caption)
             .setParseMode(ParseMode.HTML)
             .call(ctx.sender)
+
+    protected fun editMessage(messageId: Int, text: String) {
+        Methods.editMessageText(ctx.chatId(), messageId, text)
+            .setParseMode(ParseMode.HTML)
+            .disableWebPagePreview()
+            .call(ctx.sender)
+    }
 
     protected fun deleteMessageAsync(messageId: Int) {
         ctx.deleteMessage()

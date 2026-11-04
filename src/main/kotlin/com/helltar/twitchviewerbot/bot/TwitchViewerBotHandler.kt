@@ -30,7 +30,7 @@ class TwitchViewerBotHandler(
     init {
         commandRegistry.run {
             register(SimpleCommand("/add") { executeCommand(AddCommand(botContext(it))) })
-            register(SimpleCommand("/clip") { executeCommand(ClipCommand(botContext(it)), RequestKey.CLIP) })
+            register(SimpleCommand("/clip") { executeCommand(ClipCommand(botContext(it)), RequestKey.unique(RequestKey.CLIP)) })
             register(SimpleCommand("/list") { executeCommand(ListCommand(botContext(it))) })
             register(SimpleCommand("/screenshot") { executeCommand(ScreenshotCommand(botContext(it)), RequestKey.SCREENSHOT) })
             register(SimpleCommand("/cancel") { cancelJobs(it) })

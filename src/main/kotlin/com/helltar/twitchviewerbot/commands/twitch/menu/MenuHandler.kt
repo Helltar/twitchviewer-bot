@@ -190,8 +190,9 @@ class MenuHandler(private val dependencies: BotDependencies) : CommandBundle<For
 
     private fun requestKey(callback: MenuCallback): String =
         when (callback.action) {
+            // clips run side by side and share the user's recording slots, see ClipSlots
             MenuAction.CLIP_ONE, MenuAction.CLIP_AUDIO_ONE, MenuAction.CLIP_ALL ->
-                RequestKey.forUser(RequestKey.CLIP, callback.ownerId)
+                RequestKey.forUser(RequestKey.unique(RequestKey.CLIP), callback.ownerId)
 
             MenuAction.SCREENSHOT_ALL -> RequestKey.forUser(RequestKey.SCREENSHOT, callback.ownerId)
 

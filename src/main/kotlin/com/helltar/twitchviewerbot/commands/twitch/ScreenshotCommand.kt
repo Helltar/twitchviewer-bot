@@ -5,43 +5,23 @@ import com.helltar.twitchviewerbot.Localization
 import com.helltar.twitchviewerbot.bot.BotContext
 import com.helltar.twitchviewerbot.commands.TwitchCommand
 import com.helltar.twitchviewerbot.twitch.StreamInfo
-import com.helltar.twitchviewerbot.coroutines.runCatchingPreservingCancellation
 import org.telegram.telegrambots.meta.api.methods.ParseMode
 import org.telegram.telegrambots.meta.api.objects.media.InputMediaPhoto
 
 class ScreenshotCommand(botContext: BotContext<MessageContext>) : TwitchCommand(botContext) {
 
     override suspend fun run() {
-        if (arguments.isEmpty()) {
-            val channels = loadUserChannels()
-
-            if (channels.isNotEmpty())
-                fetchAndSendScreenshots(channels)
-            else
-                replyToMessage(localizedString(Localization.SCREENSHOT_COMMAND_INFO))
-        } else {
-            val channel = arguments.first()
-
-            if (checkChannelNameAndReplyIfInvalid(channel))
-                fetchAndSendScreenshots(listOf(channel))
-        }
+        val selection = selectChannels(Localization.SCREENSHOT_COMMAND_INFO) ?: return
+        fetchAndSendScreenshots(selection.channels, selection.named)
     }
 
-    fun fetchAndSendScreenshots(channels: List<String>) {
+    fun fetchAndSendScreenshots(channels: List<String>, named: Set<String> = emptySet()) {
         val tempMessageId = replyToMessage(localizedString(Localization.WAIT_CHECK_ONLINE))
 
         try {
-            val liveList =
-                runCatchingPreservingCancellation { twitchService.fetchActiveStreams(channels) }
-                    .getOrElse {
-                        replyToMessage(localizedString(Localization.TWITCH_EXCEPTION))
-                        return
-                    }
-
-            if (liveList.isNotEmpty()) {
-                val chunks = liveList.chunked(10)
-
-                chunks.forEach { chunk ->
+            fetchLiveStreams(channels, named)
+                .chunked(10)
+                .forEach { chunk ->
                     if (chunk.size > 1)
                         replyToMessageWithMediaGroup(chunk.map { buildMediaPhoto(it) })
                     else {
@@ -49,8 +29,6 @@ class ScreenshotCommand(botContext: BotContext<MessageContext>) : TwitchCommand(
                         replyToMessageWithPhoto(stream.thumbnailUrl, createHtmlCaption(stream))
                     }
                 }
-            } else
-                replyToMessage(localizedString(Localization.EMPTY_ONLINE_LIST))
         } finally {
             deleteMessageAsync(tempMessageId)
         }
